@@ -60,6 +60,13 @@ def handle_callback_query(call):
                        range(1, len(all_tasks) + 1)]
             markup.add(*buttons)
             bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)
+   
+    if data == 'all_tasks':
+        text = 'Все задачи:\n'
+        for i, task_id in enumerate(all_tasks.keys(), start=1):
+            text += f"{i}. {all_tasks[task_id]['name']}\n"
+        bot.send_message(chat_id, text=text)
+    
     if data == 'edit_name':
         bot.send_message(chat_id, 'Напишите название задачи')
         bot.register_next_step_handler(call.message, edit_name)
@@ -201,7 +208,8 @@ def show_menu(chat_id):
         {'text': 'Создать новую задачу', 'callback_data': 'add_task'},
         {'text': 'Распределить роли', 'callback_data': 'assign_roles'},
         {'text': 'Моя команда', 'callback_data': 'team'},
-        {'text': 'Редактировать задачу', 'callback_data': 'edit_task'}
+        {'text': 'Редактировать задачу', 'callback_data': 'edit_task'},
+        {'text': 'Ваши задачи', 'callback_data': 'all_tasks'}
     ]
     text = 'Отлично! Теперь вы можете распределить роли и поставить первые задачи.'
     send_message_with_inline_keyboard(chat_id, text, buttons)
