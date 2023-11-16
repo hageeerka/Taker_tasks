@@ -61,12 +61,69 @@ def handle_callback_query(call):
             markup.add(*buttons)
             bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)
 
-    if data == 'all_tasks':
+        if data == 'all_tasks':
         text = 'Все задачи:\n'
         for i, task_id in enumerate(all_tasks.keys(), start=1):
-            text += f"{i}. {all_tasks[task_id]['name']}\n"
-        bot.send_message(chat_id, text=text)
+            task_info = all_tasks[task_id]
+            status = "Выполнена" if task_info.get('completed', False) else "Не выполнена"
+            text += f"{i}. {task_info['name']} - {status}\n"
+        buttons = [
+            {'text': 'Вернуться в меню', 'callback_data': 'return_menu'},
+            {'text': 'Невыполненные задачи', 'callback_data': 'uncompleted_tasks'},
+            {'text': 'Выполненные задачи', 'callback_data': 'completed_tasks'},
+            {'text': 'Изменить статус задачи', 'callback_data': 'change_status'}
+        ]
+        send_message_with_inline_keyboard(chat_id, text, buttons)
 
+    if data == 'return_menu':
+        show_menu(chat_id)
+
+    if data == 'completed_tasks':
+        completed_tasks = [task_id for task_id, task_info in all_tasks.items() if task_info.get('completed', False)]
+        if not completed_tasks:
+            text = 'Нет выполненных задач.'
+        else:
+            text = 'Выполненные задачи:\n'
+            for i, task_id in enumerate(completed_tasks, start=1):
+                text += f"{i}. {all_tasks[task_id]['name']}\n"
+        buttons = [{'text': 'Вернуться в меню', 'callback_data': 'return_menu'}]
+        send_message_with_inline_keyboard(chat_id, text, buttons)
+
+    if data == 'uncompleted_tasks':
+        uncompleted_tasks = [task_id for task_id, task_info in all_tasks.items() if
+                             not task_info.get('completed', False)]
+        if not uncompleted_tasks:
+            text = 'Нет невыполненных задач.'
+        else:
+            text = 'Невыполненные задачи:\n'
+            for i, task_id in enumerate(uncompleted_tasks, start=1):
+                text += f"{i}. {all_tasks[task_id]['name']}\n"
+        buttons = [{'text': 'Вернуться в меню', 'callback_data': 'return_menu'}]
+        send_message_with_inline_keyboard(chat_id, text, buttons)
+
+    if data == 'change_status':
+        text = 'Выберите задачу для изменения статуса:'
+        buttons = [
+            {'text': f'{i + 1}. {task_info["name"]}', 'callback_data': f'change_status_{task_id}'}
+            for i, (task_id, task_info) in enumerate(all_tasks.items())
+        ]
+        buttons.append({'text': 'Вернуться в меню', 'callback_data': 'return_menu'})
+        send_message_with_inline_keyboard(chat_id, text, buttons)
+
+    if data.startswith('change_status_'):
+        task_id_to_change = data.replace('change_status_', '')
+        if task_id_to_change in all_tasks:
+            task_info = all_tasks[task_id_to_change]
+            current_status = task_info.get('completed', False)
+            new_status = not current_status
+            task_info['completed'] = new_status
+            text = f"Статус задачи изменен на {'Выполнена' if new_status else 'Не выполнена'}."
+        else:
+            text = "Задача не найдена."
+
+        buttons = [{'text': 'Вернуться в меню', 'callback_data': 'return_menu'}]
+        send_message_with_inline_keyboard(chat_id, text, buttons)
+    
     if data == 'edit_name':
         bot.send_message(chat_id, 'Напишите название задачи')
         bot.register_next_step_handler(call.message, edit_name)
