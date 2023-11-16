@@ -60,13 +60,13 @@ def handle_callback_query(call):
                        range(1, len(all_tasks) + 1)]
             markup.add(*buttons)
             bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)
-   
+
     if data == 'all_tasks':
         text = 'Все задачи:\n'
         for i, task_id in enumerate(all_tasks.keys(), start=1):
             text += f"{i}. {all_tasks[task_id]['name']}\n"
         bot.send_message(chat_id, text=text)
-    
+
     if data == 'edit_name':
         bot.send_message(chat_id, 'Напишите название задачи')
         bot.register_next_step_handler(call.message, edit_name)
@@ -138,13 +138,15 @@ def handle_callback_query(call):
     if data == 'edit_role':
         bot.send_message(chat_id, 'Напишите роль')
         bot.register_next_step_handler(call.message, edit_role)
-    '''if data.startswith('delete_member_'):
-        del my_team['member_'+str(data[-1])]
+    if data.startswith('del_member_'):
+        member_id_number = int(data[-1])
+        for i in range(member_id_number, len(my_team)):
+            my_team['member_' + str(i)] = my_team['member_' + str(i + 1)]
+        del my_team['member_' + str(len(my_team))]
         bot.send_message(chat_id, 'Этот участник был удалён из команды.')
-        print(my_team)
     if data == 'delete_member':
         if len(my_team) != 0:
-            text = 'Список участников:\n'
+            '''text = 'Список участников:\n'
             for i in range(len(my_team)):
                 show_member_id = 'member_' + str(i + 1)
                 text +=f"Участнк № {i + 1}\n" \
@@ -152,12 +154,12 @@ def handle_callback_query(call):
                         f"Имя: {my_team[show_member_id]['firstname']}\n" \
                         f"Фамилия: {my_team[show_member_id]['lastname']}\n" \
                         f"Роль: {my_team[show_member_id]['role']}\n"
-            bot.send_message(chat_id, text=text)
+            bot.send_message(chat_id, text=text)'''
             markup = types.InlineKeyboardMarkup()
-            buttons = [types.InlineKeyboardButton(str(i), callback_data=f'delete_member_{i}') for i in
+            buttons = [types.InlineKeyboardButton(my_team['member_' + str(i)]['username'], callback_data=f'del_member_{i}') for i in
                        range(1, len(my_team) + 1)]
             markup.add(*buttons)
-            bot.send_message(chat_id, text='Выберите участника, которого хотите удалить из команды.', reply_markup=markup)'''
+            bot.send_message(chat_id, text='Выберите участника, которого хотите удалить из команды.', reply_markup=markup)
     if data == 'assign_roles':
         bot.send_message(chat_id, 'Напишите username')
         bot.register_next_step_handler(call.message, set_username)
