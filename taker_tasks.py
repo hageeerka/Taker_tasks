@@ -61,7 +61,7 @@ def handle_callback_query(call):
             markup.add(*buttons)
             bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)
 
-        if data == 'all_tasks':
+    if data == 'all_tasks':
         text = 'Все задачи:\n'
         for i, task_id in enumerate(all_tasks.keys(), start=1):
             task_info = all_tasks[task_id]
