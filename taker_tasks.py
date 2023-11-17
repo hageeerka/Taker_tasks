@@ -1,7 +1,7 @@
 import telebot
 from telebot import types
 
-token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
+token = '6933495351:AAEIm3hBl79gABYjaUaQvd0_o2WQ7pUEpeM'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
