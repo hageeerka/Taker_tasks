@@ -1,5 +1,6 @@
 import telebot
 from telebot import types
+from typing import Optional
 
 token = '6933495351:AAEIm3hBl79gABYjaUaQvd0_o2WQ7pUEpeM'
 bot = telebot.TeleBot(token)
@@ -30,6 +31,7 @@ def start_message(message):
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
     chat_id = call.message.chat.id
+    message_id = call.message.message_id
     data = call.data
 
     if data == 'add_director':
@@ -62,21 +64,13 @@ def handle_callback_query(call):
             bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)
 
     if data == 'all_tasks':
-        text = 'Все задачи:\n'
-        for i, task_id in enumerate(all_tasks.keys(), start=1):
-            task_info = all_tasks[task_id]
-            status = "Выполнена" if task_info.get('completed', False) else "Не выполнена"
-            text += f"{i}. {task_info['name']} - {status}\n"
-        buttons = [
-            {'text': 'Вернуться в меню', 'callback_data': 'return_menu'},
-            {'text': 'Невыполненные задачи', 'callback_data': 'uncompleted_tasks'},
-            {'text': 'Выполненные задачи', 'callback_data': 'completed_tasks'},
-            {'text': 'Изменить статус задачи', 'callback_data': 'change_status'}
-        ]
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        show_all_tasks(chat_id, message_id)
 
     if data == 'return_menu':
         show_menu(chat_id)
+
+    if data == 'return_all_tasks':
+        show_all_tasks(chat_id, message_id)
 
     if data == 'completed_tasks':
         completed_tasks = [task_id for task_id, task_info in all_tasks.items() if task_info.get('completed', False)]
@@ -86,8 +80,8 @@ def handle_callback_query(call):
             text = 'Выполненные задачи:\n'
             for i, task_id in enumerate(completed_tasks, start=1):
                 text += f"{i}. {all_tasks[task_id]['name']}\n"
-        buttons = [{'text': 'Вернуться в меню', 'callback_data': 'return_menu'}]
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
+        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'uncompleted_tasks':
         uncompleted_tasks = [task_id for task_id, task_info in all_tasks.items() if
@@ -98,8 +92,8 @@ def handle_callback_query(call):
             text = 'Невыполненные задачи:\n'
             for i, task_id in enumerate(uncompleted_tasks, start=1):
                 text += f"{i}. {all_tasks[task_id]['name']}\n"
-        buttons = [{'text': 'Вернуться в меню', 'callback_data': 'return_menu'}]
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
+        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'change_status':
         text = 'Выберите задачу для изменения статуса:'
@@ -107,8 +101,8 @@ def handle_callback_query(call):
             {'text': f'{i + 1}. {task_info["name"]}', 'callback_data': f'change_status_{task_id}'}
             for i, (task_id, task_info) in enumerate(all_tasks.items())
         ]
-        buttons.append({'text': 'Вернуться в меню', 'callback_data': 'return_menu'})
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        buttons.append({'text': 'Назад', 'callback_data': 'return_all_tasks'})
+        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data.startswith('change_status_'):
         task_id_to_change = data.replace('change_status_', '')
@@ -121,8 +115,8 @@ def handle_callback_query(call):
         else:
             text = "Задача не найдена."
 
-        buttons = [{'text': 'Вернуться в меню', 'callback_data': 'return_menu'}]
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
+        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'edit_name':
         bot.send_message(chat_id, 'Напишите название задачи')
@@ -499,6 +493,42 @@ def edit_role(message):
            f"Роль: {my_team[member_id]['role']}\n" \
            "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
     send_message_with_inline_keyboard(chat_id, text, buttons)
+
+
+def show_all_tasks(chat_id, message_id):
+    text = 'Все задачи:\n'
+    for i, task_id in enumerate(all_tasks.keys(), start=1):
+        task_info = all_tasks[task_id]
+        status = "Выполнена" if task_info.get('completed', False) else "Не выполнена"
+        text += f"{i}. {task_info['name']} - {status}\n"
+    buttons = [
+        {'text': 'Вернуться в меню', 'callback_data': 'return_menu'},
+        {'text': 'Невыполненные задачи', 'callback_data': 'uncompleted_tasks'},
+        {'text': 'Выполненные задачи', 'callback_data': 'completed_tasks'},
+        {'text': 'Изменить статус задачи', 'callback_data': 'change_status'}
+    ]
+    edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
+
+
+def edit_message_text(chat_id: int, message_id: Optional[int], text: str, reply_markup=None):
+    if message_id:
+        bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup)
+    else:
+        bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
+
+
+def generate_inline_keyboard(buttons):
+    markup = types.InlineKeyboardMarkup()
+    for button in buttons:
+        markup.add(types.InlineKeyboardButton(text=button['text'], callback_data=button['callback_data']))
+    return markup
+
+
+def show_back_button(chat_id, message_id, callback_data):
+    buttons = [
+        {'text': 'Назад', 'callback_data': callback_data}
+    ]
+    edit_message_text(chat_id, message_id, 'Выберите действие:', reply_markup=generate_inline_keyboard(buttons))
 
 
 bot.polling(none_stop=True)
