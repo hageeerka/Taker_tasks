@@ -15,16 +15,16 @@ def send_message_with_inline_keyboard(chat_id, text, buttons):
     markup = types.InlineKeyboardMarkup()
     for button in buttons:
         markup.add(types.InlineKeyboardButton(text=button['text'], callback_data=button['callback_data']))
-    bot.send_message(chat_id, text, reply_markup=markup)
+    bot.send_message(chat_id, text, parse_mode='Markdown', reply_markup=markup)
 
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
     chat_id = message.chat.id
-    text = 'Привет! Я Чат-бот Трекер задач, готов помочь вам с организацией работы над проектом.' \
-           'Вместе мы сможем эффективно достигать поставленных целей.' \
-           'Для начала назначьте должность Руководителя.'
-    buttons = [{'text': 'Добавить руководителя', 'callback_data': 'add_director'}]
+    text = f'Привет!👋🏼\nЯ Чат-бот Трекер задач, готов помочь вам с организацией работы над проектом. \n' \
+           'Вместе мы сможем эффективно достигать поставленных целей. \n'\
+           '*Для начала назначьте должность Руководителя.* '
+    buttons = [{'text': '▶️Добавить руководителя', 'callback_data': 'add_director'}]
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -141,25 +141,25 @@ def handle_callback_query(call):
         all_tasks[task_id]['priority'] = int(data.split('_')[1])
         if len(my_team) == 0:
             buttons = [
-                {'text': 'Всё верно', 'callback_data': 'add_member'},
-                {'text': 'Изменить название', 'callback_data': 'edit_name'},
-                {'text': 'Изменить описание', 'callback_data': 'edit_description'},
-                {'text': 'Изменить дедлайн', 'callback_data': 'edit_deadline'},
-                {'text': 'Изменить приоритет', 'callback_data': 'edit_priority'}
+                {'text': '🟢Всё верно', 'callback_data': 'menu'},
+                {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
+                {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
+                {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
+                {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
             ]
         else:
             buttons = [
-                {'text': 'Всё верно', 'callback_data': 'menu'},
-                {'text': 'Изменить название', 'callback_data': 'edit_name'},
-                {'text': 'Изменить описание', 'callback_data': 'edit_description'},
-                {'text': 'Изменить дедлайн', 'callback_data': 'edit_deadline'},
-                {'text': 'Изменить приоритет', 'callback_data': 'edit_priority'}
+                {'text': '🟢Всё верно', 'callback_data': 'menu'},
+                {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
+                {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
+                {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
+                {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
             ]
         text = f"Ваша задача создана, проверьте информацию.\n" \
-               f"Название: {all_tasks[task_id]['name']}\n" \
-               f"Описание: {all_tasks[task_id]['description']}\n" \
-               f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
-               f"Приоритет: {all_tasks[task_id]['priority']}"
+               f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
+               f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
+               f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
+               f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
         send_message_with_inline_keyboard(chat_id, text, buttons)
     if data.startswith('edit_task_'):
         task_id = 'task_' + data[-1]
@@ -177,7 +177,7 @@ def handle_callback_query(call):
         global member_id
         member_id = 'member_' + str(len(my_team) + 1)
         my_team[member_id] = {"username": None, 'firstname': None, 'lastname': None, 'role': None}
-        bot.send_message(chat_id, f"{additional_text}Напишите username участника, которого хотите добавить в команду.")
+        bot.send_message(chat_id, f"{additional_text}Напишите @username участника, которого хотите добавить в команду.")
         bot.register_next_step_handler(call.message, set_username)
     if data.startswith('edit_member_'):
         member_id = 'member_' + data[-1]
@@ -190,7 +190,7 @@ def handle_callback_query(call):
         send_message_with_inline_keyboard(chat_id, 'Выберите, какую именно информацию об участнике хотите изменить',
                                           buttons)
     if data == 'edit_username':
-        bot.send_message(chat_id, 'Напишите username')
+        bot.send_message(chat_id, 'Напишите @username')
         bot.register_next_step_handler(call.message, edit_username)
     if data == 'edit_firstname':
         bot.send_message(chat_id, 'Напишите имя')
@@ -216,11 +216,11 @@ def handle_callback_query(call):
             '''text = 'Список участников:\n'
             for i in range(len(my_team)):
                 show_member_id = 'member_' + str(i + 1)
-                text +=f"Участнк № {i + 1}\n" \
-                        f"@username: {my_team[show_member_id]['username']}\n" \
-                        f"Имя: {my_team[show_member_id]['firstname']}\n" \
-                        f"Фамилия: {my_team[show_member_id]['lastname']}\n" \
-                        f"Роль: {my_team[show_member_id]['role']}\n"
+                text +=f"Участник № {i + 1}\n" \
+                        f"🔸@username: {my_team[show_member_id]['username']}\n" \
+                        f"🔸Имя: {my_team[show_member_id]['firstname']}\n" \
+                        f"🔸Фамилия: {my_team[show_member_id]['lastname']}\n" \
+                        f"🔸Роль: {my_team[show_member_id]['role']}\n"
             bot.send_message(chat_id, text=text)'''
             markup = types.InlineKeyboardMarkup()
             buttons = [
@@ -249,7 +249,7 @@ def handle_callback_query(call):
         bot.send_message(chat_id, text='Выберите участника, которого хотите закрепить за задачей.',
                          reply_markup=markup)
     if data == 'assign_roles':
-        '''bot.send_message(chat_id, 'Напишите username')
+        '''bot.send_message(chat_id, 'Напишите @username')
         bot.register_next_step_handler(call.message, set_username)'''
         if len(all_tasks) != 0:
             text = 'Список задач:\n'
@@ -274,11 +274,11 @@ def handle_callback_query(call):
             text = "Список участников:\n"
             for i in range(len(my_team)):
                 show_member_id = 'member_' + str(i + 1)
-                text += f"Участнк № {i + 1}\n" \
-                        f"@username: {my_team[show_member_id]['username']}\n" \
-                        f"Имя: {my_team[show_member_id]['firstname']}\n" \
-                        f"Фамилия: {my_team[show_member_id]['lastname']}\n" \
-                        f"Роль: {my_team[show_member_id]['role']}\n"
+                text += f"*Участник № {i + 1}\n*" \
+                        f"🔸@username: {my_team[show_member_id]['username']}\n" \
+                        f"🔸Имя: {my_team[show_member_id]['firstname']}\n" \
+                        f"🔸Фамилия: {my_team[show_member_id]['lastname']}\n" \
+                        f"🔸Роль: {my_team[show_member_id]['role']}\n"
         buttons = [
             {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
         ]
@@ -296,11 +296,11 @@ def handle_callback_query(call):
             text = 'Список участников:\n'
             for i in range(len(my_team)):
                 show_member_id = 'member_' + str(i + 1)
-                text += f"Участнк № {i + 1}\n" \
-                        f"@username: {my_team[show_member_id]['username']}\n" \
-                        f"Имя: {my_team[show_member_id]['firstname']}\n" \
-                        f"Фамилия: {my_team[show_member_id]['lastname']}\n" \
-                        f"Роль: {my_team[show_member_id]['role']}\n"
+                text += f"Участник № {i + 1}\n" \
+                        f"🔸@username: {my_team[show_member_id]['username']}\n" \
+                        f"🔸Имя: {my_team[show_member_id]['firstname']}\n" \
+                        f"🔸Фамилия: {my_team[show_member_id]['lastname']}\n" \
+                        f"🔸Роль: {my_team[show_member_id]['role']}\n"
             bot.send_message(chat_id, text=text)
             markup = types.InlineKeyboardMarkup()
             buttons = [types.InlineKeyboardButton(str(i), callback_data=f'edit_member_{i}') for i in
@@ -312,11 +312,11 @@ def handle_callback_query(call):
 
 def show_menu(chat_id):
     buttons = [
-        {'text': 'Создать новую задачу', 'callback_data': 'add_task'},
-        {'text': 'Распределить участникав по задачам', 'callback_data': 'assign_roles'},
-        {'text': 'Моя команда', 'callback_data': 'team'},
-        {'text': 'Редактировать задачу', 'callback_data': 'edit_task'},
-        {'text': 'Ваши задачи', 'callback_data': 'all_tasks'}
+        {'text': '➕Создать новую задачу', 'callback_data': 'add_task'},
+        {'text': '📝Распределить участников по задачам', 'callback_data': 'assign_roles'},
+        {'text': '🔝Моя команда', 'callback_data': 'team'},
+        {'text': '✏️Редактировать задачу', 'callback_data': 'edit_task'},
+        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'}
     ]
     text = 'Отлично! Теперь вы можете распределить роли и поставить задачи.'
     send_message_with_inline_keyboard(chat_id, text, buttons)
@@ -330,7 +330,7 @@ def set_director(message):
         if username.startswith("@"):
             temp_data[chat_id]["director_id"] = username
             buttons = [
-                {'text': 'Создать новую задачу', 'callback_data': 'add_task'}
+                {'text': '➕Создать новую задачу', 'callback_data': 'add_task'}
             ]
             text = 'Отлично! Теперь вам необходимо создать первую задачу.'
             send_message_with_inline_keyboard(chat_id, text, buttons)
@@ -356,17 +356,17 @@ def edit_name(message):
     chat_id = message.chat.id
     all_tasks[task_id]['name'] = message.text.strip()
     buttons = [
-        {'text': 'Всё верно', 'callback_data': 'menu'},
-        {'text': 'Изменить название', 'callback_data': 'edit_name'},
-        {'text': 'Изменить описание', 'callback_data': 'edit_description'},
-        {'text': 'Изменить дедлайн', 'callback_data': 'edit_deadline'},
-        {'text': 'Изменить приоритет', 'callback_data': 'edit_priority'}
+        {'text': '🟢Всё верно', 'callback_data': 'menu'},
+        {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
+        {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
+        {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
+        {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
     ]
     text = f"Ваша задача создана, проверьте информацию.\n" \
-           f"Название: {all_tasks[task_id]['name']}\n" \
-           f"Описание: {all_tasks[task_id]['description']}\n" \
-           f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
-           f"Приоритет: {all_tasks[task_id]['priority']}"
+           f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
+           f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
+           f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
+           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -383,17 +383,17 @@ def edit_description(message):
     chat_id = message.chat.id
     all_tasks[task_id]['description'] = message.text.strip()
     buttons = [
-        {'text': 'Всё верно', 'callback_data': 'menu'},
-        {'text': 'Изменить название', 'callback_data': 'edit_name'},
-        {'text': 'Изменить описание', 'callback_data': 'edit_description'},
-        {'text': 'Изменить дедлайн', 'callback_data': 'edit_deadline'},
-        {'text': 'Изменить приоритет', 'callback_data': 'edit_priority'}
+        {'text': '🟢Всё верно', 'callback_data': 'menu'},
+        {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
+        {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
+        {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
+        {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
     ]
     text = f"Ваша задача создана, проверьте информацию.\n" \
-           f"Название: {all_tasks[task_id]['name']}\n" \
-           f"Описание: {all_tasks[task_id]['description']}\n" \
-           f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
-           f"Приоритет: {all_tasks[task_id]['priority']}"
+           f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
+           f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
+           f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
+           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -412,17 +412,17 @@ def edit_deadline(message):
     chat_id = message.chat.id
     all_tasks[task_id]['deadline'] = message.text.strip()
     buttons = [
-        {'text': 'Всё верно', 'callback_data': 'menu'},
-        {'text': 'Изменить название', 'callback_data': 'edit_name'},
-        {'text': 'Изменить описание', 'callback_data': 'edit_description'},
-        {'text': 'Изменить дедлайн', 'callback_data': 'edit_deadline'},
-        {'text': 'Изменить приоритет', 'callback_data': 'edit_priority'}
+        {'text': '🟢Всё верно', 'callback_data': 'menu'},
+        {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
+        {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
+        {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
+        {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
     ]
     text = f"Ваша задача создана, проверьте информацию.\n" \
-           f"Название: {all_tasks[task_id]['name']}\n" \
-           f"Описание: {all_tasks[task_id]['description']}\n" \
-           f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
-           f"Приоритет: {all_tasks[task_id]['priority']}"
+           f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
+           f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
+           f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
+           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -441,10 +441,10 @@ def edit_username(message):
         {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
     text = f"Участник создан, проверьте информацию.\n" \
-           f"@username: {my_team[member_id]['username']}\n" \
-           f"Имя: {my_team[member_id]['firstname']}\n" \
-           f"Фамилия: {my_team[member_id]['lastname']}\n" \
-           f"Роль: {my_team[member_id]['role']}\n" \
+           f"🔸@username: {my_team[member_id]['username']}\n" \
+           f"🔸Имя: {my_team[member_id]['firstname']}\n" \
+           f"🔸Фамилия: {my_team[member_id]['lastname']}\n" \
+           f"🔸Роль: {my_team[member_id]['role']}\n" \
            "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
@@ -464,10 +464,10 @@ def edit_firstname(message):
         {'text': "всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
     text = f"Участник создан, проверьте информацию.\n" \
-           f"@username: {my_team[member_id]['username']}\n" \
-           f"Имя: {my_team[member_id]['firstname']}\n" \
-           f"Фамилия: {my_team[member_id]['lastname']}\n" \
-           f"Роль: {my_team[member_id]['role']}\n" \
+           f"🔸@username: {my_team[member_id]['username']}\n" \
+           f"🔸Имя: {my_team[member_id]['firstname']}\n" \
+           f"🔸Фамилия: {my_team[member_id]['lastname']}\n" \
+           f"🔸Роль: {my_team[member_id]['role']}\n" \
            "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
@@ -488,10 +488,10 @@ def edit_lastname(message):
         {'text': "всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
     text = f"Участник создан, проверьте информацию.\n" \
-           f"@username: {my_team[member_id]['username']}\n" \
-           f"Имя: {my_team[member_id]['firstname']}\n" \
-           f"Фамилия: {my_team[member_id]['lastname']}\n" \
-           f"Роль: {my_team[member_id]['role']}\n" \
+           f"🔸@username: {my_team[member_id]['username']}\n" \
+           f"🔸Имя: {my_team[member_id]['firstname']}\n" \
+           f"🔸Фамилия: {my_team[member_id]['lastname']}\n" \
+           f"🔸Роль: {my_team[member_id]['role']}\n" \
            "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
@@ -505,10 +505,10 @@ def set_role(message):
             {'text': "всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
         ]
         text = f"Участник создан, проверьте информацию.\n" \
-               f"@username: {my_team[member_id]['username']}\n" \
-               f"Имя: {my_team[member_id]['firstname']}\n" \
-               f"Фамилия: {my_team[member_id]['lastname']}\n" \
-               f"Роль: {my_team[member_id]['role']}\n" \
+               f"🔸@username: {my_team[member_id]['username']}\n" \
+               f"🔸Имя: {my_team[member_id]['firstname']}\n" \
+               f"🔸Фамилия: {my_team[member_id]['lastname']}\n" \
+               f"🔸Роль: {my_team[member_id]['role']}\n" \
                "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
         send_message_with_inline_keyboard(chat_id, text, buttons)
 
@@ -520,10 +520,10 @@ def edit_role(message):
         {'text': "всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
     text = f"Участник создан, проверьте информацию.\n" \
-           f"@username: {my_team[member_id]['username']}\n" \
-           f"Имя: {my_team[member_id]['firstname']}\n" \
-           f"Фамилия: {my_team[member_id]['lastname']}\n" \
-           f"Роль: {my_team[member_id]['role']}\n" \
+           f"🔸@username: {my_team[member_id]['username']}\n" \
+           f"🔸Имя: {my_team[member_id]['firstname']}\n" \
+           f"🔸Фамилия: {my_team[member_id]['lastname']}\n" \
+           f"🔸Роль: {my_team[member_id]['role']}\n" \
            "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
