@@ -141,25 +141,18 @@ def handle_callback_query(call):
         all_tasks[task_id]['priority'] = int(data.split('_')[1])
         if len(my_team) == 0:
             buttons = [
-                {'text': '🟢Всё верно', 'callback_data': 'add_member'},
-                {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-                {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-                {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-                {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+                {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
             ]
         else:
             buttons = [
-                {'text': '🟢Всё верно', 'callback_data': 'menu'},
-                {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-                {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-                {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-                {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+                {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
             ]
         text = f"Ваша задача создана, проверьте информацию.\n" \
                f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
                f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
                f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
-               f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
+               f"🔸*Приоритет*: {all_tasks[task_id]['priority']}\n"\
+                "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
         send_message_with_inline_keyboard(chat_id, text, buttons)
     if data.startswith('edit_task_'):
         task_id = 'task_' + data[-1]
@@ -309,7 +302,8 @@ def handle_callback_query(call):
             {'text': '🚻Показать список участников', 'callback_data': 'show_team'},
             {'text': '🆕Добавить участника', 'callback_data': 'add_member'},
             {'text': '🔄Редактировать участника', 'callback_data': 'edit_member'},
-            {'text': '⤵️Удалить участника', 'callback_data': 'delete_member'}
+            {'text': '⤵️Удалить участника', 'callback_data': 'delete_member'},
+            {'text': '🔙Возвратиться назад', 'callback_data': 'menu'}
         ]
         send_message_with_inline_keyboard(chat_id, 'Выберите, что хотите сделать с участником команды.', buttons)
     if data == 'edit_member':
@@ -378,25 +372,18 @@ def edit_name(message):
     all_tasks[task_id]['name'] = message.text.strip()
     if len(my_team) == 0:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'add_member'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
         ]
     else:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'menu'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
         ]
     text = f"Ваша задача создана, проверьте информацию.\n" \
            f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
            f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
            f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
-           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
+           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}\n" \
+           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -414,25 +401,18 @@ def edit_description(message):
     all_tasks[task_id]['description'] = message.text.strip()
     if len(my_team) == 0:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'add_member'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
         ]
     else:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'menu'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
         ]
     text = f"Ваша задача создана, проверьте информацию.\n" \
            f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
            f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
            f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
-           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
+           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}\n" \
+           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -452,25 +432,18 @@ def edit_deadline(message):
     all_tasks[task_id]['deadline'] = message.text.strip()
     if len(my_team) == 0:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'add_member'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
         ]
     else:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'menu'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
         ]
     text = f"Ваша задача создана, проверьте информацию.\n" \
            f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
            f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
            f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
-           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
+           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}\n" \
+           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -486,25 +459,18 @@ def edit_username(message):
     chat_id = message.chat.id
     if len(my_team) == 0:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'add_member'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
         ]
     else:
         buttons = [
-            {'text': '🟢Всё верно', 'callback_data': 'menu'},
-            {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
-            {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
-            {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
         ]
     text = f"Ваша задача создана, проверьте информацию.\n" \
            f"🔸*Название*: {all_tasks[task_id]['name']}\n" \
            f"🔸*Описание*: {all_tasks[task_id]['description']}\n" \
            f"🔸*Дедлайн*: {all_tasks[task_id]['deadline']}\n" \
-           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}"
+           f"🔸*Приоритет*: {all_tasks[task_id]['priority']}\n" \
+           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -520,7 +486,7 @@ def edit_firstname(message):
     chat_id = message.chat.id
     my_team[member_id]['firstname'] = message.text.strip()
     buttons = [
-        {'text': "всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
+        {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
     text = f"Участник создан, проверьте информацию.\n" \
            f"🔸@username: {my_team[member_id]['username']}\n" \
