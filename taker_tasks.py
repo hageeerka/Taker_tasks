@@ -56,12 +56,12 @@ def handle_callback_query(call):
                         f"Описание: {all_tasks[task_id]['description']}\n" \
                         f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
                         f"Приоритет: {all_tasks[task_id]['priority']}\n"
-            bot.send_message(chat_id, text=text)
+            bot.send_message(chat_id, text=text, parse_mode='Markdown')
             markup = types.InlineKeyboardMarkup()
             buttons = [types.InlineKeyboardButton(str(i), callback_data=f'edit_task_{i}') for i in
                        range(1, len(all_tasks) + 1)]
             markup.add(*buttons)
-            bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', parse_mode='Markdown', reply_markup=markup)
+            bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)
 
     if data == 'all_tasks':
         show_all_tasks(chat_id, message_id)
@@ -246,7 +246,7 @@ def handle_callback_query(call):
             text = '*Список задач*:\n'
             for i in range(len(all_tasks)):
                 task_id = 'task_' + str(i + 1)
-                text += f"*Задача № {i + 1}*\n" \
+                text += f"_Задача № {i + 1}_\n" \
                         f"Название:{all_tasks[task_id]['name']}\n" \
                         f"Описание: {all_tasks[task_id]['description']}\n" \
                         f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
