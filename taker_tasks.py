@@ -1,14 +1,94 @@
 import telebot
 from telebot import types
 from typing import Optional
+import json
+import os
 
-token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
+token = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
 my_team = {}
 task_id = None
 member_id = None
+
+
+def save_my_team(message, id_member):
+    file_path = f"C:/Users/timofei/Desktop/моё/json/m{id_member}.json"
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+        json.dump(my_team, file, ensure_ascii=False)
+
+
+def load_my_team(id_member):
+    file_path = f"C:/Users/timofei/Desktop/моё/json/m{id_member}.json"
+
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            my_team.update(data)
+    except FileNotFoundError:
+        print(f"Файл {file_path} не найден.")
+
+
+def save_all_tasks(message, id_member):
+    file_path = f"C:/Users/timofei/Desktop/моё/json/a{id_member}.json"
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+        json.dump(all_tasks, file, ensure_ascii=False)
+
+
+def load_all_tasks(id_member):
+    file_path = f"C:/Users/timofei/Desktop/моё/json/a{id_member}.json"
+
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            all_tasks.update(data)
+    except FileNotFoundError:
+        print(f"Файл {file_path} не найден.")
+
+
+def save_temp_data(message, id_member):
+    file_path = f"C:/Users/timofei/Desktop/моё/json/t{id_member}.json"
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+        json.dump(temp_data, file, ensure_ascii=False)
+
+
+def load_temp_data(id_member):
+    file_path = f"C:/Users/timofei/Desktop/моё/json/t{id_member}.json"
+
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            temp_data.update(data)
+    except FileNotFoundError:
+        print(f"Файл {file_path} не найден.")
+
+
+@bot.message_handler(commands=['load'])
+def handle_save_command(message):
+    id_member = message.from_user.id
+    load_my_team(id_member)
+    load_temp_data(id_member)
+    load_all_tasks(id_member)
+    bot.reply_to(message, 'Данные успешно загружены!')
+
+
+@bot.message_handler(commands=['save'])
+def handle_save_command(message):
+    id_member = message.from_user.id
+    save_my_team(message, id_member)
+    save_temp_data(message, id_member)
+    save_all_tasks(message, id_member)
+    bot.reply_to(message, 'Данные успешно сохранены!')
 
 
 def send_message_with_inline_keyboard(chat_id, text, buttons):
