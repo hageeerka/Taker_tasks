@@ -1,94 +1,14 @@
 import telebot
 from telebot import types
 from typing import Optional
-import json
-import os
 
-token = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
+token = '6773205610:AAH3PRcWctg3bgSLpFKDyM-exIEohFZV4gE'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
 my_team = {}
 task_id = None
 member_id = None
-
-
-def save_my_team(message, id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/m{id_member}.json"
-
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(my_team, file, ensure_ascii=False)
-
-
-def load_my_team(id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/m{id_member}.json"
-
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            my_team.update(data)
-    except FileNotFoundError:
-        print(f"Файл {file_path} не найден.")
-
-
-def save_all_tasks(message, id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/a{id_member}.json"
-
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(all_tasks, file, ensure_ascii=False)
-
-
-def load_all_tasks(id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/a{id_member}.json"
-
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            all_tasks.update(data)
-    except FileNotFoundError:
-        print(f"Файл {file_path} не найден.")
-
-
-def save_temp_data(message, id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/t{id_member}.json"
-
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(temp_data, file, ensure_ascii=False)
-
-
-def load_temp_data(id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/t{id_member}.json"
-
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            temp_data.update(data)
-    except FileNotFoundError:
-        print(f"Файл {file_path} не найден.")
-
-
-@bot.message_handler(commands=['load'])
-def handle_save_command(message):
-    id_member = message.from_user.id
-    load_my_team(id_member)
-    load_temp_data(id_member)
-    load_all_tasks(id_member)
-    bot.reply_to(message, 'Данные успешно загружены!')
-
-
-@bot.message_handler(commands=['save'])
-def handle_save_command(message):
-    id_member = message.from_user.id
-    save_my_team(message, id_member)
-    save_temp_data(message, id_member)
-    save_all_tasks(message, id_member)
-    bot.reply_to(message, 'Данные успешно сохранены!')
 
 
 def send_message_with_inline_keyboard(chat_id, text, buttons):
@@ -106,7 +26,6 @@ def start_message(message):
            '*Для начала назначьте должность Руководителя.* '
     buttons = [{'text': '▶️Добавить руководителя', 'callback_data': 'add_director'}]
     send_message_with_inline_keyboard(chat_id, text, buttons)
-
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
@@ -286,15 +205,6 @@ def handle_callback_query(call):
         send_message_with_inline_keyboard(chat_id, text, buttons)
     if data == 'delete_member':
         if len(my_team) != 0:
-            '''text = 'Список участников:\n'
-            for i in range(len(my_team)):
-                show_member_id = 'member_' + str(i + 1)
-                text +=f"Участник № {i + 1}\n" \
-                        f"🔸@username: {my_team[show_member_id]['username']}\n" \
-                        f"🔸Имя: {my_team[show_member_id]['firstname']}\n" \
-                        f"🔸Фамилия: {my_team[show_member_id]['lastname']}\n" \
-                        f"🔸Роль: {my_team[show_member_id]['role']}\n"
-            bot.send_message(chat_id, text=text)'''
             markup = types.InlineKeyboardMarkup()
             buttons = [
                 types.InlineKeyboardButton(my_team['member_' + str(i)]['username'], callback_data=f'del_member_{i}') for
@@ -347,7 +257,7 @@ def handle_callback_query(call):
         buttons += {types.InlineKeyboardButton('Готово!',
                                                callback_data=f'ready_to_assign')}
         markup.add(*buttons)
-        bot.send_message(chat_id, text='Нажмите на @username всех участников, которые будет закреплены за задачей. Затем нажмите кнопку "Готово!"',
+        bot.send_message(chat_id, text="Нажмите на @username всех участников, которые будет закреплены за задачей. Затем нажмите кнопку 'Готово!' ",
                          reply_markup=markup)
     if data.startswith('assign_member_'):
         task_id = 'task_'+data[-1]
@@ -383,7 +293,7 @@ def handle_callback_query(call):
             {'text': '🆕Добавить участника', 'callback_data': 'add_member'},
             {'text': '🔄Редактировать участника', 'callback_data': 'edit_member'},
             {'text': '⤵️Удалить участника', 'callback_data': 'delete_member'},
-            {'text': '🔙Возвратиться назад', 'callback_data': 'menu'}
+            {'text': '🔙Вернуться назад', 'callback_data': 'menu'}
         ]
         send_message_with_inline_keyboard(chat_id, 'Выберите, что хотите сделать с участником команды.', buttons)
     if data == 'edit_member':
@@ -403,6 +313,45 @@ def handle_callback_query(call):
             markup.add(*buttons)
             bot.send_message(chat_id, text='Выберите участника, информацию о котором вы хотите изменить',
                              reply_markup=markup)
+    if data.startswith('show_member_tasks'):
+        #chat_id = message.chat.id
+        markup = types.InlineKeyboardMarkup()
+        buttons = [
+            types.InlineKeyboardButton(my_team['member_' + str(i)]['username'],
+                                        callback_data=f'show_tasks_for_member_{i}') for
+            i in
+            range(1, len(my_team) + 1)]
+        markup.add(*buttons)
+        bot.send_message(chat_id, text='Выбери участника, для которого хочешь посмотреть задачи',
+                            reply_markup=markup)
+    if data.startswith('show_tasks_for_member_'):
+        member_id = 'member_'+data[-1]
+        tasks = []
+        buttons = []
+        text = 'Выберите задачу, информация о которой вам интересна. Задачи расположены в порядке приоритета от наиболее важных к наименее важным.'
+        for task_id in all_tasks:
+            if all_tasks[task_id]['responsible'] is not None:
+                if my_team[member_id]['username'] in all_tasks[task_id]['responsible']:
+                    tasks.append(task_id)
+        for num_priority in range(1,6):
+            for task_id in tasks:
+                if num_priority == int(all_tasks[task_id]['priority']):
+                    buttons.append({'text': all_tasks[task_id]['name'], 'callback_data': f'show_task_{task_id[-1]}_for_member_{member_id[-1]}'})
+        send_message_with_inline_keyboard(chat_id, text, buttons)
+    if data.startswith('show_task_'):
+        task_id = 'task_'+data[10]
+        member_id = 'member_'+data[-1]
+        text = f"_Задача № {task_id[-1]}_\n" \
+                f"Название:{all_tasks[task_id]['name']}\n" \
+                f"Описание: {all_tasks[task_id]['description']}\n" \
+                f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
+                f"Приоритет: {all_tasks[task_id]['priority']}\n"
+        buttons = [
+            {'text': '🔙Выбрать другую задачу', 'callback_data': f'show_tasks_for_member_{task_id[-1]}'},
+            {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
+        ]
+        send_message_with_inline_keyboard(chat_id, text, buttons)
+
 
 
 def show_menu(chat_id):
@@ -411,7 +360,8 @@ def show_menu(chat_id):
         {'text': '📝Распределить участников по задачам', 'callback_data': 'assign_roles'},
         {'text': '🔝Моя команда', 'callback_data': 'team'},
         {'text': '✏️Редактировать задачу', 'callback_data': 'edit_task'},
-        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'}
+        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'},
+        {'text': 'Задачи для участника', 'callback_data': 'show_member_tasks'}
     ]
     text = 'Отлично! Теперь вы можете распределить роли и поставить задачи.'
     send_message_with_inline_keyboard(chat_id, text, buttons)
@@ -419,7 +369,6 @@ def show_menu(chat_id):
 
 def set_director(message):
     chat_id = message.chat.id
-    # user_id = message.from_user.id
     if chat_id in temp_data and temp_data[chat_id]["director_id"] is None:
         username = message.text.strip()
         if username.startswith("@"):
@@ -429,11 +378,6 @@ def set_director(message):
             ]
             text = 'Отлично! Теперь вам необходимо создать первую задачу.'
             send_message_with_inline_keyboard(chat_id, text, buttons)
-            '''task_id = 'task_' + str(len(all_tasks) + 1)
-        all_tasks[task_id] = {"name": None, 'description': None, 'deadline': None, 'responsible': None,
-                              'priority': None}
-        bot.send_message(chat_id, "Напишите название задачи")
-        bot.register_next_step_handler(call.message, set_name)'''
 
         else:
             bot.send_message(chat_id, '*Пожалуйста, напишите правильный @username руководителя*', parse_mode='Markdown')
