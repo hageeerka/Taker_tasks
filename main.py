@@ -4,7 +4,7 @@ from typing import Optional
 import json
 import os
 
-token = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
+token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
@@ -43,7 +43,7 @@ def save_all_tasks(id_member):
 
 
 def load_all_tasks(id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/a{id_member}.json"
+    file_path =  f"C:/Users/timofei/Desktop/моё/json/a{id_member}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -54,7 +54,7 @@ def load_all_tasks(id_member):
 
 
 def save_temp_data(id_member):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/t{id_member}.json"
+    file_path =  f"C:/Users/timofei/Desktop/моё/json/t{id_member}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -96,6 +96,12 @@ def send_message_with_inline_keyboard(chat_id, text, buttons):
     for button in buttons:
         markup.add(types.InlineKeyboardButton(text=button['text'], callback_data=button['callback_data']))
     bot.send_message(chat_id, text, parse_mode='Markdown', reply_markup=markup)
+
+
+@bot.message_handler(commands=['menu'])
+def menu(message):
+    chat_id = message.chat.id
+    show_menu(chat_id)
 
 
 @bot.message_handler(commands=['start'])
@@ -142,11 +148,17 @@ def handle_callback_query(call):
                         f"Дедлайн: {all_tasks[id_member][task_id]['deadline']}\n" \
                         f"Приоритет: {all_tasks[id_member][task_id]['priority']}\n"
             bot.send_message(chat_id, text=text, parse_mode='Markdown')
-            markup = types.InlineKeyboardMarkup()
+            '''markup = types.InlineKeyboardMarkup()
             buttons = [types.InlineKeyboardButton(str(i), callback_data=f'edit_task_{i}') for i in
                        range(1, len(all_tasks[id_member]) + 1)]
             markup.add(*buttons)
-            bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)
+            bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)'''
+            buttons = []
+            for i in range(1, len(all_tasks[id_member]) + 1):
+                buttons.append({'text': str(i), 'callback_data': f'edit_task_{i}'})
+            buttons.append({'text': '🔙Вернуться назад', 'callback_data': 'menu'})
+            text = 'Выберите задачу, которую хотите изменить'
+            send_message_with_inline_keyboard(chat_id, text, buttons)
 
     if data == 'all_tasks':
         show_all_tasks(chat_id, message_id, id_member)
@@ -246,9 +258,21 @@ def handle_callback_query(call):
             {'text': '⚫️Изменить название', 'callback_data': 'edit_name'},
             {'text': '🔵️Изменить описание', 'callback_data': 'edit_description'},
             {'text': '⚫️Изменить дедлайн', 'callback_data': 'edit_deadline'},
-            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'}
+            {'text': '🔵️Изменить приоритет', 'callback_data': 'edit_priority'},
+            {'text': '❌Удалить задачу', 'callback_data': 'delete_task'},
+            {'text': '🔙Вернуться назад', 'callback_data': 'edit_task'}
+
         ]
         send_message_with_inline_keyboard(chat_id, 'Выберите, что именно хотите изменить в вашей задаче', buttons)
+    if data == 'delete_task':
+        for i in range(int(task_id[-1]), len(all_tasks)):
+            all_tasks[id_member]['task_' + str(i)] = all_tasks['task_' + str(i + 1)]
+        del all_tasks[id_member]['task_' + str(len(all_tasks))]
+        buttons = [
+            {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
+        ]
+        text = 'Эта задача была удалена из списка.'
+        send_message_with_inline_keyboard(chat_id, text, buttons)
     if data == 'add_member':
         additional_text = ''
         if len(my_team[id_member]) == 0:
@@ -292,15 +316,6 @@ def handle_callback_query(call):
         send_message_with_inline_keyboard(chat_id, text, buttons)
     if data == 'delete_member':
         if len(my_team[id_member]) != 0:
-            '''text = 'Список участников:\n'
-            for i in range(len(my_team)):
-                show_member_id = 'member_' + str(i + 1)
-                text +=f"Участник № {i + 1}\n" \
-                        f"🔸@username: {my_team[show_member_id]['username']}\n" \
-                        f"🔸Имя: {my_team[show_member_id]['firstname']}\n" \
-                        f"🔸Фамилия: {my_team[show_member_id]['lastname']}\n" \
-                        f"🔸Роль: {my_team[show_member_id]['role']}\n"
-            bot.send_message(chat_id, text=text)'''
             markup = types.InlineKeyboardMarkup()
             buttons = [
                 types.InlineKeyboardButton(my_team[id_member]['member_' + str(i)]['username'],
@@ -390,8 +405,8 @@ def handle_callback_query(call):
             {'text': '🚻Показать список участников', 'callback_data': 'show_team'},
             {'text': '🆕Добавить участника', 'callback_data': 'add_member'},
             {'text': '🔄Редактировать участника', 'callback_data': 'edit_member'},
-            {'text': '⤵️Удалить участника', 'callback_data': 'delete_member'},
-            {'text': '🔙Возвратиться назад', 'callback_data': 'menu'}
+            {'text': '❌Удалить участника', 'callback_data': 'delete_member'},
+            {'text': '🔙Вернуться назад', 'callback_data': 'menu'}
         ]
         send_message_with_inline_keyboard(chat_id, 'Выберите, что хотите сделать с участником команды.', buttons)
     if data == 'edit_member':
@@ -659,7 +674,6 @@ def edit_role(message):
 
 
 def show_all_tasks(chat_id, message_id, id_member):
-
     text = '*Все задачи:*\n'
     for i, task_id in enumerate(all_tasks[id_member].keys(), start=1):
         task_info = all_tasks[id_member][task_id]
