@@ -3,6 +3,7 @@ from telebot import types
 from typing import Optional
 import json
 import os
+import fnmatch
 
 token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
 bot = telebot.TeleBot(token)
@@ -460,6 +461,7 @@ def set_director(message):
 
         else:
             bot.send_message(chat_id, '*Пожалуйста, напишите правильный @username руководителя*', parse_mode='Markdown')
+            bot.register_next_step_handler(message, set_director)
 
 
 def set_name(message):
@@ -529,32 +531,40 @@ def set_deadline(message):
     if all_tasks[id_member][task_id]['deadline'] is None and all_tasks[id_member][task_id]['name'] is not None and \
             all_tasks[id_member][task_id][
                 'description'] is not None:
-        all_tasks[id_member][task_id]['deadline'] = message.text.strip()
-        buttons = [types.InlineKeyboardButton(str(i), callback_data=f'priority_{i}') for i in range(1, 6)]
-        markup = types.InlineKeyboardMarkup()
-        markup.add(*buttons)
-        bot.send_message(chat_id, text='Выберите приоритет задачи.', reply_markup=markup)
+        if fnmatch.fnmatch(message.text, "??.??.???? ??:??"):
+            all_tasks[id_member][task_id]['deadline'] = message.text.strip()
+            buttons = [types.InlineKeyboardButton(str(i), callback_data=f'priority_{i}') for i in range(1, 6)]
+            markup = types.InlineKeyboardMarkup()
+            markup.add(*buttons)
+            bot.send_message(chat_id, text='Выберите приоритет задачи.', reply_markup=markup)
+        else:
+            new_message = bot.send_message(chat_id, '*Пожалуйста, укажите дедлайн формате date.month.year hours:minutes.*', parse_mode='Markdown')
+            bot.register_next_step_handler(new_message, set_deadline)
 
 
 def edit_deadline(message):
     chat_id = message.chat.id
     id_member = message.from_user.id
     all_tasks[id_member][task_id]['deadline'] = message.text.strip()
-    if len(my_team[id_member]) == 0:
-        buttons = [
-            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
-        ]
+    if fnmatch.fnmatch(message.text, "??.??.???? ??:??"):
+        if len(my_team[id_member]) == 0:
+            buttons = [
+                {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
+            ]
+        else:
+            buttons = [
+                {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
+            ]
+        text = f"Ваша задача создана, проверьте информацию.\n" \
+               f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
+               f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
+               f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
+               f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
+               "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
+        send_message_with_inline_keyboard(chat_id, text, buttons)
     else:
-        buttons = [
-            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
-        ]
-    text = f"Ваша задача создана, проверьте информацию.\n" \
-           f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
-           f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
-           f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
-           f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
-           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
-    send_message_with_inline_keyboard(chat_id, text, buttons)
+        new_message = bot.send_message(chat_id, '*Пожалуйста, укажите дедлайн формате date.month.year hours:minutes.*', parse_mode='Markdown')
+        bot.register_next_step_handler(new_message, edit_deadline)
 
 
 def set_username(message):
@@ -562,28 +572,36 @@ def set_username(message):
     id_member = message.from_user.id
     if my_team[id_member][member_id]['username'] is None:
         my_team[id_member][member_id]['username'] = message.text.strip()
-        bot.send_message(chat_id, 'Напишите имя участника')
-        bot.register_next_step_handler(message, set_firstname)
-
+        if my_team[id_member][member_id]['username'].startswith('@'):
+            bot.send_message(chat_id, 'Напишите имя участника')
+            bot.register_next_step_handler(message, set_firstname)
+        else:
+            my_team[id_member][member_id]['username'] = None
+            bot.send_message(chat_id, '*Пожалуйста, введите @username в верном формате.*', parse_mode = 'Markdown')
+            bot.register_next_step_handler(message, set_username) 
 
 def edit_username(message):
     chat_id = message.chat.id
     id_member = message.from_user.id
-    if len(my_team[id_member]) == 0:
-        buttons = [
-            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
-        ]
+    if message.text.startswith('@'):
+        if len(my_team[id_member]) == 0:
+            buttons = [
+                {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
+            ]
+        else:
+            buttons = [
+                {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
+            ]
+        text = f"Ваша задача создана, проверьте информацию.\n" \
+               f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
+               f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
+               f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
+               f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
+               "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
+        send_message_with_inline_keyboard(chat_id, text, buttons)
     else:
-        buttons = [
-            {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
-        ]
-    text = f"Ваша задача создана, проверьте информацию.\n" \
-           f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
-           f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
-           f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
-           f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
-           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
-    send_message_with_inline_keyboard(chat_id, text, buttons)
+        bot.send_message(chat_id, '*Пожалуйста, введите @username в верном формате.*', parse_mode = 'Markdown')
+        bot.register_next_step_handler(message, edit_username)  
 
 
 def set_firstname(message):
