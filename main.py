@@ -5,7 +5,7 @@ import json
 import os
 import fnmatch
 
-token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
+token = '6773205610:AAH3PRcWctg3bgSLpFKDyM-exIEohFZV4gE'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
@@ -460,7 +460,7 @@ def set_director(message):
         bot.register_next_step_handler(call.message, set_name)'''
 
         else:
-            bot.send_message(chat_id, '*Пожалуйста, напишите правильный @username руководителя*', parse_mode='Markdown')
+            bot.send_message(chat_id, '*Пожалуйста, напишите @username в верном формате.*', parse_mode='Markdown')
             bot.register_next_step_handler(message, set_director)
 
 
@@ -485,12 +485,12 @@ def edit_name(message):
         buttons = [
             {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
         ]
-    text = f"Ваша задача создана, проверьте информацию.\n" \
+    text = f"Информация о задаче изменена.\n" \
            f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
            f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
            f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
            f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
-           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
+           "P.S. изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -516,12 +516,12 @@ def edit_description(message):
         buttons = [
             {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
         ]
-    text = f"Ваша задача создана, проверьте информацию.\n" \
+    text = f"Информация о задаче изменена.\n" \
            f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
            f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
            f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
            f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
-           "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
+           "P.S. изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
@@ -555,12 +555,12 @@ def edit_deadline(message):
             buttons = [
                 {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
             ]
-        text = f"Ваша задача создана, проверьте информацию.\n" \
+        text = f"Информация о задаче изменена.\n" \
                f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
                f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
                f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
                f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
-               "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
+               "P.S. изменить задачу вы можете в разделе 'Главное меню'"
         send_message_with_inline_keyboard(chat_id, text, buttons)
     else:
         new_message = bot.send_message(chat_id, '*Пожалуйста, укажите дедлайн формате date.month.year hours:minutes.*', parse_mode='Markdown')
@@ -585,23 +585,24 @@ def edit_username(message):
     id_member = message.from_user.id
     if message.text.startswith('@'):
         if len(my_team[id_member]) == 0:
-            buttons = [
-                {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
-            ]
-        else:
+            my_team[id_member][member_id]['username'] = message.text.strip()
             buttons = [
                 {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
             ]
-        text = f"Ваша задача создана, проверьте информацию.\n" \
-               f"🔸*Название*: {all_tasks[id_member][task_id]['name']}\n" \
-               f"🔸*Описание*: {all_tasks[id_member][task_id]['description']}\n" \
-               f"🔸*Дедлайн*: {all_tasks[id_member][task_id]['deadline']}\n" \
-               f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
-               "P.S. Изменить задачу вы можете в разделе 'Главное меню'"
+        else:
+            buttons = [
+                {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
+            ]
+            text = f"Информация об участнике изменена.\n" \
+                   f"🔸@username: {my_team[id_member][member_id]['username']}\n" \
+                   f"🔸Имя: {my_team[id_member][member_id]['firstname']}\n" \
+                   f"🔸Фамилия: {my_team[id_member][member_id]['lastname']}\n" \
+                   f"🔸Роль: {my_team[id_member][member_id]['role']}\n" \
+                   "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
         send_message_with_inline_keyboard(chat_id, text, buttons)
     else:
         bot.send_message(chat_id, '*Пожалуйста, введите @username в верном формате.*', parse_mode = 'Markdown')
-        bot.register_next_step_handler(message, edit_username)  
+        bot.register_next_step_handler(message, edit_username)   
 
 
 def set_firstname(message):
@@ -620,7 +621,7 @@ def edit_firstname(message):
     buttons = [
         {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
-    text = f"Участник создан, проверьте информацию.\n" \
+    text = f"Информация об участнике изменена.\n" \
            f"🔸@username: {my_team[id_member][member_id]['username']}\n" \
            f"🔸Имя: {my_team[id_member][member_id]['firstname']}\n" \
            f"🔸Фамилия: {my_team[id_member][member_id]['lastname']}\n" \
@@ -647,7 +648,7 @@ def edit_lastname(message):
     buttons = [
         {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
-    text = f"Участник создан, проверьте информацию.\n" \
+    text = f"Информация об участнике изменена.\n" \
            f"🔸@username: {my_team[id_member][member_id]['username']}\n" \
            f"🔸Имя: {my_team[id_member][member_id]['firstname']}\n" \
            f"🔸Фамилия: {my_team[id_member][member_id]['lastname']}\n" \
@@ -682,7 +683,7 @@ def edit_role(message):
     buttons = [
         {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
     ]
-    text = f"Участник создан, проверьте информацию.\n" \
+    text = f"Информация об участнике изменена.\n" \
            f"🔸@username: {my_team[id_member][member_id]['username']}\n" \
            f"🔸Имя: {my_team[id_member][member_id]['firstname']}\n" \
            f"🔸Фамилия: {my_team[id_member][member_id]['lastname']}\n" \
