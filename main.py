@@ -5,7 +5,7 @@ import json
 import os
 import fnmatch
 
-token = '6773205610:AAH3PRcWctg3bgSLpFKDyM-exIEohFZV4gE'
+token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
@@ -172,6 +172,7 @@ def handle_callback_query(call):
                           reply_markup=markup)
 
     if data.startswith('show_tasks_for_member_'):
+        global member_id
         member_id = 'member_'+data[-1]
         tasks = []
         buttons = []
@@ -314,7 +315,6 @@ def handle_callback_query(call):
         additional_text = ''
         if len(my_team[id_member]) == 0:
             additional_text = 'Теперь вам необходимо добавить первого участника в команду. '
-        global member_id
         member_id = 'member_' + str(len(my_team[id_member]) + 1)
         my_team[id_member][member_id] = {"username": None, 'firstname': None, 'lastname': None, 'role': None}
         bot.send_message(chat_id, f"{additional_text}Напишите @username участника, которого хотите добавить в команду.")
@@ -614,7 +614,7 @@ def set_username(message):
         else:
             my_team[id_member][member_id]['username'] = None
             bot.send_message(chat_id, '*Пожалуйста, введите @username в верном формате.*', parse_mode = 'Markdown')
-            bot.register_next_step_handler(message, set_username) 
+            bot.register_next_step_handler(message, set_username)
 
 def edit_username(message):
     chat_id = message.chat.id
@@ -638,7 +638,7 @@ def edit_username(message):
         send_message_with_inline_keyboard(chat_id, text, buttons)
     else:
         bot.send_message(chat_id, '*Пожалуйста, введите @username в верном формате.*', parse_mode = 'Markdown')
-        bot.register_next_step_handler(message, edit_username)   
+        bot.register_next_step_handler(message, edit_username)
 
 
 def set_firstname(message):
