@@ -5,7 +5,7 @@ import json
 import os
 import fnmatch
 
-token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
+token = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
@@ -166,7 +166,7 @@ def handle_callback_query(call):
 
     if data.startswith('show_member_tasks'):
         markup = types.InlineKeyboardMarkup()
-        buttons = [types.InlineKeyboardButton(my_team[id_member]['member_' + str(i)]['username'], callback_data=f'show_tasks_for_member_{i}') for i in range(1, len(my_team) + 1)]
+        buttons = [types.InlineKeyboardButton(my_team[id_member]['member_' + str(i)]['username'], callback_data=f'show_tasks_for_member_{i}') for i in range(1, len(my_team[id_member]) + 1)]
         markup.add(*buttons)
         edit_message_text(chat_id, message_id, text='Выбери участника, для которого хочешь посмотреть задачи',
                           reply_markup=markup)
@@ -177,24 +177,24 @@ def handle_callback_query(call):
         tasks = []
         buttons = []
         text = 'Выберите задачу, информация о которой вам интересна. Задачи расположены в порядке приоритета от наиболее важных к наименее важным.'
-        for task_id in all_tasks:
-            if all_tasks[task_id]['responsible'] is not None:
-                if my_team[member_id]['username'] in all_tasks[task_id]['responsible']:
+        for task_id in all_tasks[id_member]:
+            if all_tasks[id_member][task_id]['responsible'] is not None:
+                if my_team[id_member][member_id]['username'] in all_tasks[id_member][task_id]['responsible']:
                     tasks.append(task_id)
         for num_priority in range(1,6):
             for task_id in tasks:
-                if num_priority == int(all_tasks[task_id]['priority']):
-                    buttons.append({'text': all_tasks[task_id]['name'], 'callback_data': f'show_task_{task_id[-1]}_for_member_{member_id[-1]}'})
+                if num_priority == int(all_tasks[id_member][task_id]['priority']):
+                    buttons.append({'text': all_tasks[id_member][task_id]['name'], 'callback_data': f'show_task_{task_id[-1]}_for_member_{member_id[-1]}'})
         edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
 
     if data.startswith('show_task_'):
         task_id = 'task_'+data[10]
         member_id = 'member_'+data[-1]
         text = f"_Задача № {task_id[-1]}_\n" \
-                f"Название:{all_tasks[task_id]['name']}\n" \
-                f"Описание: {all_tasks[task_id]['description']}\n" \
-                f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
-                f"Приоритет: {all_tasks[task_id]['priority']}\n"
+                f"Название:{all_tasks[id_member][task_id]['name']}\n" \
+                f"Описание: {all_tasks[id_member][task_id]['description']}\n" \
+                f"Дедлайн: {all_tasks[id_member][task_id]['deadline']}\n" \
+                f"Приоритет: {all_tasks[id_member][task_id]['priority']}\n"
         buttons = [
             {'text': '🔙Выбрать другую задачу', 'callback_data': f'show_tasks_for_member_{task_id[-1]}'},
             {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
