@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 from typing import Optional
 
-token = '6773205610:AAH3PRcWctg3bgSLpFKDyM-exIEohFZV4gE'
+token = '6933495351:AAEIm3hBl79gABYjaUaQvd0_o2WQ7pUEpeM'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
@@ -353,15 +353,13 @@ def handle_callback_query(call):
         send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
-
 def show_menu(chat_id):
     buttons = [
         {'text': '➕Создать новую задачу', 'callback_data': 'add_task'},
         {'text': '📝Распределить участников по задачам', 'callback_data': 'assign_roles'},
         {'text': '🔝Моя команда', 'callback_data': 'team'},
         {'text': '✏️Редактировать задачу', 'callback_data': 'edit_task'},
-        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'},
-        {'text': 'Задачи для участника', 'callback_data': 'show_member_tasks'}
+        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'}
     ]
     text = 'Отлично! Теперь вы можете распределить роли и поставить задачи.'
     send_message_with_inline_keyboard(chat_id, text, buttons)
@@ -587,7 +585,8 @@ def show_all_tasks(chat_id, message_id):
         {'text': '🔙Вернуться в Главное меню', 'callback_data': 'return_menu'},
         {'text': '❌Невыполненные задачи', 'callback_data': 'uncompleted_tasks'},
         {'text': '✅Выполненные задачи', 'callback_data': 'completed_tasks'},
-        {'text': '✏️Изменить статус задачи', 'callback_data': 'change_status'}
+        {'text': '✏️Изменить статус задачи', 'callback_data': 'change_status'},
+        {'text': 'Задачи для участника', 'callback_data': 'show_member_tasks'}
     ]
     bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode='Markdown', reply_markup=generate_inline_keyboard(buttons))
 
