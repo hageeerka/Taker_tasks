@@ -169,7 +169,8 @@ def handle_callback_query(call):
         global member_id
         member_id = 'member_' + str(len(my_team) + 1)
         my_team[member_id] = {"username": None, 'firstname': None, 'lastname': None, 'role': None}
-        bot.send_message(chat_id, f"{additional_text}Напишите @username участника, которого хотите добавить в команду.")
+        #bot.send_message(chat_id, f"{additional_text}Напишите @username участника, которого хотите добавить в команду.")#
+        edit_message_text(chat_id, message_id, f"{additional_text}Напишите @username участника, которого хотите добавить в команду.")
         bot.register_next_step_handler(call.message, set_username)
     if data.startswith('edit_member_'):
         member_id = 'member_' + data[-1]
@@ -211,8 +212,10 @@ def handle_callback_query(call):
                 i in
                 range(1, len(my_team) + 1)]
             markup.add(*buttons)
+
             bot.send_message(chat_id, text='Выберите участника, которого хотите удалить из команды.',
                              reply_markup=markup)
+
     if data.startswith('add_responsible_member_'):
         all_tasks[f'task_{data[23]}']['responsible'] = 'member_' + str(data[-1])
         buttons = [
@@ -286,7 +289,7 @@ def handle_callback_query(call):
         buttons = [
             {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
         ]
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
     if data == 'team':
         buttons = [
             {'text': '🚻Показать список участников', 'callback_data': 'show_team'},
@@ -295,7 +298,8 @@ def handle_callback_query(call):
             {'text': '⤵️Удалить участника', 'callback_data': 'delete_member'},
             {'text': '🔙Вернуться назад', 'callback_data': 'menu'}
         ]
-        send_message_with_inline_keyboard(chat_id, 'Выберите, что хотите сделать с участником команды.', buttons)
+        edit_message_with_inline_keyboard(chat_id, message_id, 'Выберите, что хотите сделать с участником команды.', buttons)
+
     if data == 'edit_member':
         if len(my_team) != 0:
             text = 'Список участников:\n'
@@ -313,17 +317,18 @@ def handle_callback_query(call):
             markup.add(*buttons)
             bot.send_message(chat_id, text='Выберите участника, информацию о котором вы хотите изменить',
                              reply_markup=markup)
+
     if data.startswith('show_member_tasks'):
-        #chat_id = message.chat.id
         markup = types.InlineKeyboardMarkup()
         buttons = [
             types.InlineKeyboardButton(my_team['member_' + str(i)]['username'],
-                                        callback_data=f'show_tasks_for_member_{i}') for
+                                       callback_data=f'show_tasks_for_member_{i}') for
             i in
             range(1, len(my_team) + 1)]
         markup.add(*buttons)
-        bot.send_message(chat_id, text='Выбери участника, для которого хочешь посмотреть задачи',
-                            reply_markup=markup)
+        edit_message_text(chat_id, message_id, text='Выбери участника, для которого хочешь посмотреть задачи',
+                          reply_markup=markup)
+
     if data.startswith('show_tasks_for_member_'):
         member_id = 'member_'+data[-1]
         tasks = []
@@ -337,7 +342,8 @@ def handle_callback_query(call):
             for task_id in tasks:
                 if num_priority == int(all_tasks[task_id]['priority']):
                     buttons.append({'text': all_tasks[task_id]['name'], 'callback_data': f'show_task_{task_id[-1]}_for_member_{member_id[-1]}'})
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
+
     if data.startswith('show_task_'):
         task_id = 'task_'+data[10]
         member_id = 'member_'+data[-1]
@@ -350,7 +356,7 @@ def handle_callback_query(call):
             {'text': '🔙Выбрать другую задачу', 'callback_data': f'show_tasks_for_member_{task_id[-1]}'},
             {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
         ]
-        send_message_with_inline_keyboard(chat_id, text, buttons)
+        edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
 
 
 def show_menu(chat_id):
@@ -610,6 +616,11 @@ def show_back_button(chat_id, message_id, callback_data):
         {'text': 'Назад', 'callback_data': callback_data}
     ]
     edit_message_text(chat_id, message_id, 'Выберите действие:', reply_markup=generate_inline_keyboard(buttons))
+
+
+def edit_message_with_inline_keyboard(chat_id, message_id, text, buttons):
+    markup = generate_inline_keyboard(buttons)
+    edit_message_text(chat_id, message_id, text, reply_markup=markup)
 
 
 bot.polling(none_stop=True)
