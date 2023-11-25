@@ -5,7 +5,7 @@ import json
 import os
 import fnmatch
 
-token = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
+token = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
 bot = telebot.TeleBot(token)
 temp_data = {}
 all_tasks = {}
@@ -164,43 +164,6 @@ def handle_callback_query(call):
     if data == 'all_tasks':
         show_all_tasks(chat_id, message_id, id_member)
 
-    if data.startswith('show_member_tasks'):
-        markup = types.InlineKeyboardMarkup()
-        buttons = [types.InlineKeyboardButton(my_team['member_' + str(i)]['username'], callback_data=f'show_tasks_for_member_{i}') for i in range(1, len(my_team) + 1)]
-        markup.add(*buttons)
-        edit_message_text(chat_id, message_id, text='Выбери участника, для которого хочешь посмотреть задачи',
-                          reply_markup=markup)
-
-    if data.startswith('show_tasks_for_member_'):
-        global member_id
-        member_id = 'member_'+data[-1]
-        tasks = []
-        buttons = []
-        text = 'Выберите задачу, информация о которой вам интересна. Задачи расположены в порядке приоритета от наиболее важных к наименее важным.'
-        for task_id in all_tasks:
-            if all_tasks[task_id]['responsible'] is not None:
-                if my_team[member_id]['username'] in all_tasks[task_id]['responsible']:
-                    tasks.append(task_id)
-        for num_priority in range(1,6):
-            for task_id in tasks:
-                if num_priority == int(all_tasks[task_id]['priority']):
-                    buttons.append({'text': all_tasks[task_id]['name'], 'callback_data': f'show_task_{task_id[-1]}_for_member_{member_id[-1]}'})
-        edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
-
-    if data.startswith('show_task_'):
-        task_id = 'task_'+data[10]
-        member_id = 'member_'+data[-1]
-        text = f"_Задача № {task_id[-1]}_\n" \
-                f"Название:{all_tasks[task_id]['name']}\n" \
-                f"Описание: {all_tasks[task_id]['description']}\n" \
-                f"Дедлайн: {all_tasks[task_id]['deadline']}\n" \
-                f"Приоритет: {all_tasks[task_id]['priority']}\n"
-        buttons = [
-            {'text': '🔙Выбрать другую задачу', 'callback_data': f'show_tasks_for_member_{task_id[-1]}'},
-            {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
-        ]
-        edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
-
     if data == 'return_menu':
         show_menu(chat_id)
 
@@ -315,6 +278,7 @@ def handle_callback_query(call):
         additional_text = ''
         if len(my_team[id_member]) == 0:
             additional_text = 'Теперь вам необходимо добавить первого участника в команду. '
+        global member_id
         member_id = 'member_' + str(len(my_team[id_member]) + 1)
         my_team[id_member][member_id] = {"username": None, 'firstname': None, 'lastname': None, 'role': None}
         bot.send_message(chat_id, f"{additional_text}Напишите @username участника, которого хотите добавить в команду.")
@@ -738,8 +702,7 @@ def show_all_tasks(chat_id, message_id, id_member):
         {'text': '🔙Вернуться в Главное меню', 'callback_data': 'return_menu'},
         {'text': '❌Невыполненные задачи', 'callback_data': 'uncompleted_tasks'},
         {'text': '✅Выполненные задачи', 'callback_data': 'completed_tasks'},
-        {'text': '✏️Изменить статус задачи', 'callback_data': 'change_status'},
-         {'text': 'Задачи для участника', 'callback_data': 'show_member_tasks'}
+        {'text': '✏️Изменить статус задачи', 'callback_data': 'change_status'}
     ]
     bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode='Markdown',
                           reply_markup=generate_inline_keyboard(buttons))
@@ -765,8 +728,5 @@ def show_back_button(chat_id, message_id, callback_data):
     ]
     edit_message_text(chat_id, message_id, 'Выберите действие:', reply_markup=generate_inline_keyboard(buttons))
 
-def edit_message_with_inline_keyboard(chat_id, message_id, text, buttons):
-    markup = generate_inline_keyboard(buttons)
-    edit_message_text(chat_id, message_id, text, reply_markup=markup)
 
 bot.polling(none_stop=True)
