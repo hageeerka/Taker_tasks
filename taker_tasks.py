@@ -357,6 +357,44 @@ def handle_callback_query(call):
             {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
         ]
         edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
+        if data == 'gpt':
+        buttons = [
+            {'text': 'Назад', 'callback_data': 'menu'}
+        ]
+        text = 'Попросите совета у нейросети'
+        send_message_with_inline_keyboard(chat_id, text, buttons)
+        bot.register_next_step_handler(call.message, neuroask)
+
+def neuroask(message):
+    chat_id = message.chat.id
+    url = "https://llm.api.cloud.yandex.net/llm/v1alpha/chat"
+    data = {
+        "model": "general",
+        "generationOptions": {
+            "partialResults": True,
+            "temperature": 0.4,
+            "maxTokens": 200
+        },
+        "messages": [
+            {
+                "role": "ai.languageModels.user",
+                "text":message.text.strip()
+                }
+        ],
+        "instructionText": "ты нейросеть и помогаешь людям решать рабочие проблемы",
+    }
+    headers = {"Authorization": f'Api-Key {"AQVNwWtHH04wz-RRaNbCS4DH1cMfJdp67NmvF4e0"}',
+                }
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    if response.status_code == 200:
+        first_ans = json.loads(response.text.split('}\n')[-2]+'}')
+        bot.send_message(chat_id, first_ans['result']['message']['text'])
+    else:
+        buttons = [
+            {'text': 'Назад', 'callback_data': 'menu'}
+        ]
+        text = 'Извините, что-то пошло не так'
+        send_message_with_inline_keyboard(chat_id, text, buttons)
 
 
 def show_menu(chat_id):
@@ -365,7 +403,8 @@ def show_menu(chat_id):
         {'text': '📝Распределить участников по задачам', 'callback_data': 'assign_roles'},
         {'text': '🔝Моя команда', 'callback_data': 'team'},
         {'text': '✏️Редактировать задачу', 'callback_data': 'edit_task'},
-        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'}
+        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'},
+        {'text': 'Попросить совет', 'callback_data': 'gpt'}
     ]
     text = 'Отлично! Теперь вы можете распределить роли и поставить задачи.'
     send_message_with_inline_keyboard(chat_id, text, buttons)
