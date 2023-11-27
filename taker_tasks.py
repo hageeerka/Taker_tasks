@@ -444,8 +444,7 @@ def handle_callback_query(call):
             {'text': '🆕Добавить участника', 'callback_data': 'add_member'},
             {'text': '🔄Редактировать участника', 'callback_data': 'edit_member'},
             {'text': '❌Удалить участника', 'callback_data': 'delete_member'},
-            {'text': '🔙Вернуться назад', 'callback_data': 'menu'},
-            {'text': 'Попросить совет', 'callback_data': 'gpt'}
+            {'text': '🔙Вернуться назад', 'callback_data': 'menu'}
         ]
         send_message_with_inline_keyboard(chat_id, 'Выберите, что хотите сделать с участником команды.', buttons)
     if data == 'edit_member':
@@ -511,7 +510,8 @@ def show_menu(chat_id):
         {'text': '📝Распределить участников по задачам', 'callback_data': 'assign_roles'},
         {'text': '🔝Моя команда', 'callback_data': 'team'},
         {'text': '✏️Редактировать задачу', 'callback_data': 'edit_task'},
-        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'}
+        {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'},
+        {'text': 'Попросить совет', 'callback_data': 'gpt'}
     ]
     text = 'Отлично! Теперь вы можете распределить роли и поставить задачи.'
     send_message_with_inline_keyboard(chat_id, text, buttons)
