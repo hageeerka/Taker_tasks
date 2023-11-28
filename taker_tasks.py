@@ -6,7 +6,7 @@ import os
 import fnmatch
 import requests
 
-TOKEN = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
+TOKEN = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
 bot = telebot.TeleBot(TOKEN)
 temp_data = {}
 all_tasks = {}
@@ -87,9 +87,9 @@ def load_temp_data(user_id):
 
 
 def handle_save_command(user_id):
-    load_my_team(user_id)
-    load_temp_data(user_id)
-    load_all_tasks(user_id)
+    save_my_team(user_id)
+    save_temp_data(user_id)
+    save_all_tasks(user_id)
 
 
 def handle_load_command(user_id):
@@ -108,7 +108,9 @@ def send_message_with_inline_keyboard(chat_id, text, buttons):
 @bot.message_handler(commands=['menu'])
 def menu(message):
     chat_id = message.chat.id
-    show_menu(chat_id)
+    user_id = message.chat.id
+    show_menu(chat_id, user_id)
+
 
 
 
@@ -178,8 +180,7 @@ def handle_callback_query(call):
                                               callback_data=f'show_tasks_for_member_{i}') for i in
                    range(1, len(my_team[user_id]) + 1)]
         markup.add(*buttons)
-        edit_message_text(chat_id, message_id, text='Выбери участника, для которого хочешь посмотреть задачи',
-                          reply_markup=markup)
+        edit_message_text(user_id, chat_id, message_id, text='Выбери участника, для которого хочешь посмотреть задачи', reply_markup=markup)
 
     if data.startswith('show_tasks_for_member_'):
         global member_id
@@ -196,7 +197,7 @@ def handle_callback_query(call):
                 if num_priority == int(all_tasks[user_id][task_id]['priority']):
                     buttons.append({'text': all_tasks[user_id][task_id]['name'],
                                     'callback_data': f'show_task_{task_id[-1]}_for_member_{member_id[-1]}'})
-        edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
+        edit_message_with_inline_keyboard(user_id, chat_id, message_id, text, buttons)
 
     if data.startswith('show_task_'):
         task_id = 'task_' + data[10]
@@ -210,7 +211,7 @@ def handle_callback_query(call):
             {'text': '🔙Выбрать другую задачу', 'callback_data': f'show_tasks_for_member_{task_id[-1]}'},
             {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
         ]
-        edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
+        edit_message_with_inline_keyboard(user_id, chat_id, message_id, text, buttons)
 
     if data == 'return_menu':
         show_menu(chat_id, user_id)
@@ -228,7 +229,7 @@ def handle_callback_query(call):
             for i, task_id in enumerate(completed_tasks, start=1):
                 text += f"{i}. {all_tasks[user_id][task_id]['name']}\n"
         buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
-        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
+        edit_message_text(user_id, chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'uncompleted_tasks':
         uncompleted_tasks = [task_id for task_id, task_info in all_tasks[user_id].items() if
@@ -240,7 +241,7 @@ def handle_callback_query(call):
             for i, task_id in enumerate(uncompleted_tasks, start=1):
                 text += f"{i}. {all_tasks[user_id][task_id]['name']}\n"
         buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
-        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
+        edit_message_text(user_id, chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'change_status':
         text = 'Выберите задачу для изменения статуса:'
@@ -249,7 +250,7 @@ def handle_callback_query(call):
             for i, (task_id, task_info) in enumerate(all_tasks[user_id].items())
         ]
         buttons.append({'text': 'Назад', 'callback_data': 'return_all_tasks'})
-        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
+        edit_message_text(user_id, chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data.startswith('change_status_'):
         task_id_to_change = data.replace('change_status_', '')
@@ -263,7 +264,7 @@ def handle_callback_query(call):
             text = "Задача не найдена."
 
         buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
-        edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
+        edit_message_text(user_id, chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'edit_name':
         bot.send_message(chat_id, 'Напишите название задачи')
@@ -401,7 +402,7 @@ def handle_callback_query(call):
                         f"Описание: {all_tasks[user_id][task_id]['description']}\n" \
                         f"Дедлайн: {all_tasks[user_id][task_id]['deadline']}\n" \
                         f"Приоритет: {all_tasks[user_id][task_id]['priority']}\n"
-            bot.send_message(chat_id, text=text, parse_mode='Markdown')
+            bot.send_message(chat_id, text=text)
             markup = types.InlineKeyboardMarkup()
             buttons = [types.InlineKeyboardButton(str(i), callback_data=f'assign_members_to_task_{i}') for i in
                        range(1, len(all_tasks[user_id]) + 1)]
@@ -467,7 +468,7 @@ def handle_callback_query(call):
                         f"🔸Имя: {my_team[user_id][show_member_id]['firstname']}\n" \
                         f"🔸Фамилия: {my_team[user_id][show_member_id]['lastname']}\n" \
                         f"🔸Роль: {my_team[user_id][show_member_id]['role']}\n"
-            bot.send_message(chat_id, text=text)
+            bot.send_message(chat_id, text=text, parse_mode='Markdown')
             markup = types.InlineKeyboardMarkup()
             buttons = [types.InlineKeyboardButton(str(i), callback_data=f'edit_member_{i}') for i in
                        range(1, len(my_team[user_id]) + 1)]
@@ -550,7 +551,8 @@ def set_director(message):
             bot.register_next_step_handler(message, set_director)
         handle_save_command(user_id)
 
-def show_change_of_task(chat_id, id_member):
+
+def show_change_of_task(chat_id, id_member, user_id):
     if len(my_team[id_member]) == 0:
         buttons = [
             {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'add_member'}
@@ -566,6 +568,7 @@ def show_change_of_task(chat_id, id_member):
            f"🔸*Приоритет*: {all_tasks[id_member][task_id]['priority']}\n" \
            "P.S. изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
+    handle_save_command(user_id)
 
 
 def show_change_of_member(chat_id, id_member):
@@ -585,6 +588,7 @@ def show_change_of_member(chat_id, id_member):
                "P.S. изменить информацию можно в разделе 'Моя команда'.\n"
     send_message_with_inline_keyboard(chat_id, text, buttons)
 
+
 def set_name(message):
     chat_id = message.chat.id
     user_id = message.chat.id
@@ -592,15 +596,14 @@ def set_name(message):
     all_tasks[user_id][task_id]['name'] = message.text.strip()
     bot.send_message(chat_id, 'Напишите описание задачи')
     bot.register_next_step_handler(message, set_description)
-    handle_save_command(user_id)
 
 
 def edit_name(message):
     chat_id = message.chat.id
+    user_id = message.chat.id
     id_member = message.from_user.id
     all_tasks[id_member][task_id]['name'] = message.text.strip()
-    show_change_of_task(chat_id, id_member)
-    handle_save_command(user_id)
+    show_change_of_task(user_id, chat_id, id_member)
 
 
 def set_description(message):
@@ -614,11 +617,11 @@ def set_description(message):
     handle_save_command(user_id)
 
 
-def edit_description(message):
+def edit_description(message, user_id):
     chat_id = message.chat.id
     id_member = message.from_user.id
     all_tasks[id_member][task_id]['description'] = message.text.strip()
-    show_change_of_task(chat_id, id_member)
+    show_change_of_task(user_id, chat_id, id_member)
     handle_save_command(user_id)
 
 
@@ -642,12 +645,12 @@ def set_deadline(message):
     handle_save_command(user_id)
 
 
-def edit_deadline(message):
+def edit_deadline(message, user_id):
     chat_id = message.chat.id
     id_member = message.from_user.id
     all_tasks[id_member][task_id]['deadline'] = message.text.strip()
     if fnmatch.fnmatch(message.text, "??.??.???? ??:??"):
-        show_change_of_task(chat_id, id_member)
+        show_change_of_task(user_id, chat_id, id_member)
     else:
         new_message = bot.send_message(chat_id, '*Пожалуйста, укажите дедлайн формате date.month.year hours:minutes.*',
                                        parse_mode='Markdown')
@@ -655,9 +658,8 @@ def edit_deadline(message):
     handle_save_command(user_id)
 
 
-def set_username(message):
+def set_username(message, user_id):
     chat_id = message.chat.id
-    user_id = message.chat.id
     if my_team[user_id][member_id]['username'] is None:
         my_team[user_id][member_id]['username'] = message.text.strip()
         if my_team[user_id][member_id]['username'].startswith('@'):
@@ -670,7 +672,7 @@ def set_username(message):
     handle_save_command(user_id)
 
 
-def edit_username(message):
+def edit_username(message, user_id):
     chat_id = message.chat.id
     id_member = message.from_user.id
     if message.text.startswith('@'):
@@ -683,9 +685,8 @@ def edit_username(message):
     handle_save_command(user_id)
 
 
-def set_firstname(message):
+def set_firstname(message, user_id):
     chat_id = message.chat.id
-    user_id = message.chat.id
     if my_team[user_id][member_id]['username'] is not None and my_team[user_id][member_id]['firstname'] is None:
         my_team[user_id][member_id]['firstname'] = message.text.strip()
         bot.send_message(chat_id, 'Напишите фамилию участника')
@@ -693,7 +694,7 @@ def set_firstname(message):
         handle_save_command(user_id)
 
 
-def edit_firstname(message):
+def edit_firstname(message, user_id):
     chat_id = message.chat.id
     id_member = message.from_user.id
     my_team[id_member][member_id]['firstname'] = message.text.strip()
@@ -701,9 +702,8 @@ def edit_firstname(message):
     handle_save_command(user_id)
 
 
-def set_lastname(message):
+def set_lastname(message, user_id):
     chat_id = message.chat.id
-    user_id = message.chat.id
     if my_team[user_id][member_id]['username'] is not None and my_team[user_id][member_id][
         'firstname'] is not None and \
             my_team[user_id][member_id]['lastname'] is None:
@@ -713,7 +713,7 @@ def set_lastname(message):
         handle_save_command(user_id)
 
 
-def edit_lastname(message):
+def edit_lastname(message, user_id):
     chat_id = message.chat.id
     id_member = message.from_user.id
     my_team[id_member][member_id]['lastname'] = message.text.strip()
@@ -721,9 +721,8 @@ def edit_lastname(message):
     handle_save_command(user_id)
 
 
-def set_role(message):
+def set_role(message, user_id):
     chat_id = message.chat.id
-    user_id = message.chat.id
     if my_team[user_id][member_id]['username'] is not None and my_team[user_id][member_id][
         'firstname'] is not None and \
             my_team[user_id][member_id]['lastname'] is not None and my_team[user_id][member_id]['role'] is None:
@@ -741,9 +740,8 @@ def set_role(message):
         handle_save_command(user_id)
 
 
-def edit_role(message):
+def edit_role(message, user_id):
     chat_id = message.chat.id
-    user_id = message.chat.id
     my_team[user_id][member_id]['role'] = message.text.strip()
     buttons = [
         {'text': "Всё верно, вернуться в Главное меню", 'callback_data': 'menu'}
@@ -796,12 +794,13 @@ def show_back_button(chat_id, message_id, callback_data, user_id):
         {'text': 'Назад', 'callback_data': callback_data}
     ]
     handle_save_command(user_id)
-    edit_message_text(chat_id, message_id, 'Выберите действие:', reply_markup=generate_inline_keyboard(buttons))
+    edit_message_text(user_id, chat_id, message_id, 'Выберите действие:', reply_markup=generate_inline_keyboard(buttons))
 
 
-def edit_message_with_inline_keyboard(chat_id, message_id, text, buttons):
+def edit_message_with_inline_keyboard(chat_id, message_id, text, buttons, user_id):
     markup = generate_inline_keyboard(buttons)
-    edit_message_text(chat_id, message_id, text, reply_markup=markup)
+    edit_message_text(user_id, chat_id, message_id, text, reply_markup=markup)
+    handle_save_command(user_id)
 
 
 bot.polling(none_stop=True)
