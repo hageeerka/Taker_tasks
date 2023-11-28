@@ -485,6 +485,7 @@ def handle_callback_query(call):
 
 def neuroask(message):
     chat_id = message.chat.id
+    delmsg=bot.send_message(chat_id, 'Подождите немного, ваш запрос передан нейросети')
     url = "https://llm.api.cloud.yandex.net/llm/v1alpha/chat"
     data = {
         "model": "general",
@@ -505,9 +506,11 @@ def neuroask(message):
                }
     response = requests.post(url, headers=headers, data=json.dumps(data))
     if response.status_code == 200:
+        bot.delete_message(message.chat.id, delmsg.message_id)
         first_ans = json.loads(response.text.split('}\n')[-2] + '}')
         bot.send_message(chat_id, first_ans['result']['message']['text'])
     else:
+        bot.delete_message(message.chat.id, delmsg.message_id)
         buttons = [
             {'text': 'Назад', 'callback_data': 'menu'}
         ]
