@@ -1,6 +1,6 @@
 import telebot
 from telebot import types
-from typing import Optional
+#from typing import Optional
 import json
 import os
 import fnmatch
@@ -217,44 +217,32 @@ def handle_callback_query(call):
         show_all_tasks(chat_id, message_id, user_id)
 
     if data == 'completed_tasks':
-        completed_tasks = [task_id for task_id, task_info in all_tasks[user_id].items() if
-                           task_info.get('completed', False)]
-        if not completed_tasks:
-            text = 'Нет выполненных задач.'
-        else:
-            text = 'Выполненные задачи:\n'
-            for i, task_id in enumerate(completed_tasks, start=1):
-                text += f"{i}. {all_tasks[user_id][task_id]['name']}\n"
+        completed_tasks = [(i, task_info['name']) for i, (task_id, task_info) in
+                           enumerate(all_tasks[user_id].items(), start=1) if task_info.get('completed', False)]
+        text = f"{'Нет выполненных задач.' if not completed_tasks else 'Выполненные задачи:\n' + '\n'.join([f'{i}. {name}' for i, name in completed_tasks])}"
         buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
         edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'uncompleted_tasks':
-        uncompleted_tasks = [task_id for task_id, task_info in all_tasks[user_id].items() if
-                             not task_info.get('completed', False)]
-        if not uncompleted_tasks:
-            text = 'Нет невыполненных задач.'
-        else:
-            text = 'Невыполненные задачи:\n'
-            for i, task_id in enumerate(uncompleted_tasks, start=1):
-                text += f"{i}. {all_tasks[user_id][task_id]['name']}\n"
+        uncompleted_tasks = [(i, task_info['name']) for i, (task_id, task_info) in
+                             enumerate(all_tasks[user_id].items(), start=1) if not task_info.get('completed', False)]
+        text = f"{'Нет невыполненных задач.' if not uncompleted_tasks else 'Невыполненные задачи:\n' + '\n'.join([f'{i}. {name}' for i, name in uncompleted_tasks])}"
         buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
         edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
     if data == 'change_status':
         text = 'Выберите задачу для изменения статуса:'
-        buttons = [
-            {'text': f'{i + 1}. {task_info["name"]}', 'callback_data': f'change_status_{task_id}'}
-            for i, (task_id, task_info) in enumerate(all_tasks[user_id].items())
-        ]
+        buttons = [{'text': f'{i + 1}. {task_info["name"]}', 'callback_data': f'change_status_{task_id}'} for
+                   i, (task_id, task_info) in enumerate(all_tasks[user_id].items())]
         buttons.append({'text': 'Назад', 'callback_data': 'return_all_tasks'})
         edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
-    if data.startswith('change_status_'):
+    elif data.startswith('change_status_'):
         task_id_to_change = data.replace('change_status_', '')
-        if task_id_to_change in all_tasks[user_id]:
-            task_info = all_tasks[user_id][task_id_to_change]
-            current_status = task_info.get('completed', False)
-            new_status = not current_status
+        task_info = all_tasks[user_id].get(task_id_to_change)
+
+        if task_info:
+            new_status = not task_info.get('completed', False)
             task_info['completed'] = new_status
             text = f"Статус задачи изменен на {'Выполнена' if new_status else 'Не выполнена'}."
         else:
