@@ -9,7 +9,7 @@ import requests
 import datetime
 import time
 
-TOKEN = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
+TOKEN = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
 bot = telebot.TeleBot(TOKEN)
 temp_data = {}
 all_tasks = {}
@@ -66,7 +66,6 @@ def handle_callback_query(call):
         bot.send_message(chat_id, "Напишите название задачи")
         bot.register_next_step_handler(call.message, set_name)
     if data == 'edit_task':
-
         if len(all_tasks[user_id]) != 0:
             text = '*Список задач*:\n'
             for i in range(len(all_tasks[user_id])):
@@ -79,18 +78,13 @@ def handle_callback_query(call):
                         f"*Приоритет*: {all_tasks[user_id][task_id]['priority']}\n" \
                         f"*До дедлайна осталось*: {all_tasks[user_id][task_id]['timer']}\n"
             bot.send_message(chat_id, text=text, parse_mode='Markdown')
-            timer(user_id)
-            '''markup = types.InlineKeyboardMarkup()
-            buttons = [types.InlineKeyboardButton(str(i), callback_data=f'edit_task_{i}') for i in
-                       range(1, len(all_tasks[user_id]) + 1)]
-            markup.add(*buttons)
-            bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)'''
             buttons = []
             for i in range(1, len(all_tasks[user_id]) + 1):
                 buttons.append({'text': str(i), 'callback_data': f'edit_task_{i}'})
             buttons.append({'text': '🔙Вернуться назад', 'callback_data': 'menu'})
             text = 'Выберите задачу, которую хотите изменить'
             send_message_with_inline_keyboard(chat_id, text, buttons)
+            timer(user_id)
 
     if data == 'all_tasks':
         show_all_tasks(chat_id, message_id, user_id)
@@ -416,7 +410,7 @@ def handle_callback_query(call):
 
 
 def save_my_team(user_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/m{user_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{user_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -425,7 +419,7 @@ def save_my_team(user_id):
 
 
 def load_my_team(user_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/m{user_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{user_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -436,7 +430,7 @@ def load_my_team(user_id):
 
 
 def save_all_tasks(user_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/a{user_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{user_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -445,7 +439,7 @@ def save_all_tasks(user_id):
 
 
 def load_all_tasks(user_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/a{user_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{user_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -456,7 +450,7 @@ def load_all_tasks(user_id):
 
 
 def save_temp_data(user_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/t{user_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{user_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -465,7 +459,7 @@ def save_temp_data(user_id):
 
 
 def load_temp_data(user_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/t{user_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{user_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -502,7 +496,7 @@ def neuroask(message):
         "generationOptions": {
             "partialResults": True,
             "temperature": 0.4,
-            "maxTokens": 200
+            "maxTokens": 400
         },
         "messages": [
             {
@@ -533,7 +527,7 @@ def show_menu(chat_id, user_id):
         {'text': '🔝Моя команда', 'callback_data': 'team'},
         {'text': '✏️Редактировать задачу', 'callback_data': 'edit_task'},
         {'text': '📚Ваши задачи', 'callback_data': 'all_tasks'},
-        {'text': 'Попросить совет', 'callback_data': 'gpt'}
+        {'text': '💡Попросить совет', 'callback_data': 'gpt'}
     ]
     text = 'Отлично! Теперь вы можете распределить роли и поставить задачи.'
     send_message_with_inline_keyboard(chat_id, text, buttons)
