@@ -605,6 +605,8 @@ def update_timer(chat_id):
     days = remaining_time.days
     timer_string = "{:02} day(s) {:02} hour(s) {:02} minute(s) ".format(days, int(hours), int(minutes))
     all_tasks[chat_id][task_id]['timer'] = timer_string
+    if deadline < datetime.datetime.now():
+        all_tasks[chat_id][task_id]['timer'] = "{:02} day(s) {:02} hour(s) {:02} minute(s) ".format(0, 0, 0)
 
 
 def timer(chat_id):
