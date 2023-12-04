@@ -6,7 +6,6 @@ import os
 import fnmatch
 import requests
 import datetime
-import time
 
 TOKEN = '6414677588:AAEMOlh7rUvqcIzAVMuzPi-GADWp16kObHM'
 bot = telebot.TeleBot(TOKEN)
@@ -90,7 +89,7 @@ def handle_callback_query(call):
             buttons.append({'text': '🔙Вернуться назад', 'callback_data': 'menu'})
             text = 'Выберите задачу, которую хотите изменить'
             send_message_with_inline_keyboard(chat_id, text, buttons)
-            timer(chat_id)
+
     if data == 'all_tasks':
         show_all_tasks(message_id, chat_id)
 
@@ -135,7 +134,6 @@ def handle_callback_query(call):
             {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
         ]
         edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
-        timer(chat_id)
 
     if data == 'return_menu':
         show_menu(chat_id)
@@ -338,7 +336,6 @@ def handle_callback_query(call):
             markup.add(*buttons)
             bot.send_message(chat_id, text='Выберите задачу, за которой хотите закрепить участника',
                              reply_markup=markup)
-            timer(chat_id)
     if data.startswith('assign_members_to_task_'):
         all_tasks[chat_id]['task_' + data[-1]]['responsible'] = None
         markup = types.InlineKeyboardMarkup()
@@ -415,7 +412,7 @@ def handle_callback_query(call):
 
 
 def save_my_team(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{chat_id}.json"
+    file_path = f"C:/Users/timofei/Desktop/моё/json/m{chat_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -424,7 +421,7 @@ def save_my_team(chat_id):
 
 
 def load_my_team(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{chat_id}.json"
+    file_path = f"C:/Users/timofei/Desktop/моё/json/m{chat_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -435,7 +432,7 @@ def load_my_team(chat_id):
 
 
 def save_all_tasks(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{chat_id}.json"
+    file_path = f"C:/Users/timofei/Desktop/моё/json/a{chat_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -444,7 +441,7 @@ def save_all_tasks(chat_id):
 
 
 def load_all_tasks(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{chat_id}.json"
+    file_path = f"C:/Users/timofei/Desktop/моё/json/a{chat_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -455,7 +452,7 @@ def load_all_tasks(chat_id):
 
 
 def save_temp_data(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{chat_id}.json"
+    file_path = f"C:/Users/timofei/Desktop/моё/json/t{chat_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -464,7 +461,7 @@ def save_temp_data(chat_id):
 
 
 def load_temp_data(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{chat_id}.json"
+    file_path = f"C:/Users/timofei/Desktop/моё/json/t{chat_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -587,14 +584,13 @@ def show_change_of_task(chat_id):
             {'text': '🟢Всё верно, вернуться в главное меню', 'callback_data': 'menu'}
         ]
     text = f"Информация о задаче изменена.\n" \
-           f"🔸*Название*: {all_tasks[chat_id][task_id]['name']}\n" \
-           f"🔸*Описание*: {all_tasks[chat_id][task_id]['description']}\n" \
-           f"🔸*Дедлайн*: {all_tasks[chat_id][task_id]['deadline']}\n" \
-           f"🔸*Приоритет*: {all_tasks[chat_id][task_id]['priority']}\n" \
-           f"🔸*До дедлайна осталось* {all_tasks[chat_id][task_id]['timer']}\n" \
+           f"🔸Название: {all_tasks[chat_id][task_id]['name']}\n" \
+           f"🔸Описание: {all_tasks[chat_id][task_id]['description']}\n" \
+           f"🔸Дедлайн: {all_tasks[chat_id][task_id]['deadline']}\n" \
+           f"🔸Приоритет: {all_tasks[chat_id][task_id]['priority']}\n" \
+           f"🔸До дедлайна осталось {all_tasks[chat_id][task_id]['timer']}\n" \
            "P.S. изменить задачу вы можете в разделе 'Главное меню'"
     send_message_with_inline_keyboard(chat_id, text, buttons)
-    timer(chat_id)
 
 
 def update_timer(chat_id):
@@ -603,22 +599,10 @@ def update_timer(chat_id):
     hours, remainder = divmod(remaining_time.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     days = remaining_time.days
-    timer_string = "{:02} day(s) {:02} hour(s) {:02} minute(s) ".format(days, int(hours), int(minutes))
+    timer_string = "{:02} day(s) {:02} hour(s) {:02} minute(s)".format(days, int(hours), int(minutes))
     all_tasks[chat_id][task_id]['timer'] = timer_string
     if deadline < datetime.datetime.now():
         all_tasks[chat_id][task_id]['timer'] = "{:02} day(s) {:02} hour(s) {:02} minute(s) ".format(0, 0, 0)
-
-
-def timer(chat_id):
-    deadline = datetime.datetime.strptime(all_tasks[chat_id][task_id]['deadline'], "%Y-%m-%d %H:%M")
-    while deadline > datetime.datetime.now():
-        remaining_time = deadline - datetime.datetime.now()
-        hours, remainder = divmod(remaining_time.seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        days = remaining_time.days
-        all_tasks[chat_id][task_id]['timer'] = "{:02} day(s) {:02} hour(s) {:02} minute(s) ".format(days, int(hours),
-                                                                                                    int(minutes))
-        time.sleep(1)
 
 
 def show_change_of_member(chat_id):
@@ -698,31 +682,34 @@ def edit_description(message):
 
 
 def set_deadline(message):
-    '''
-    Проверяет сообщение пользоваеля на соответствие формату даты,
-    добавляет дедлайн задачи с id = task_id в словарь all_tasks,
-    перенаправляет пользователя установке приоритета текущей задачи
-    :param message: сообщение пользоваеля, содержащее дедлайн задачи
-    :type message: <class 'telebot.types.Message'>
-    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
-    if all_tasks[chat_id][task_id]['deadline'] is None and all_tasks[chat_id][task_id]['name'] is not None and \
-            all_tasks[chat_id][task_id][
-                'description'] is not None:
-        if fnmatch.fnmatch(message.text, "????-??-?? ??:??"):
-            all_tasks[chat_id][task_id]['deadline'] = message.text.strip()
+    if fnmatch.fnmatch(message.text, "????-??-?? ??:??"):
+        try:
+            # Пытаемся преобразовать введенную дату в объект datetime
+            deadline = datetime.datetime.strptime(message.text, "%Y-%m-%d %H:%M")
 
-            buttons = [types.InlineKeyboardButton(str(i), callback_data=f'priority_{i}') for i in range(1, 6)]
-            markup = types.InlineKeyboardMarkup()
-            markup.add(*buttons)
-            bot.send_message(chat_id, text='Выберите приоритет задачи.', reply_markup=markup)
-        else:
+            # Валидация дедлайна
+            if deadline < datetime.datetime.now():
+                bot.send_message(chat_id, "Указанный дедлайн уже прошел.")
+            else:
+                # Присваиваем дедлайн задаче
+                all_tasks[chat_id][task_id]['deadline'] = deadline.strftime("%Y-%m-%d %H:%M")
+
+                # Отправляем сообщение с выбором приоритета
+                buttons = [types.InlineKeyboardButton(str(i), callback_data=f'priority_{i}') for i in range(1, 6)]
+                markup = types.InlineKeyboardMarkup()
+                markup.add(*buttons)
+                bot.send_message(chat_id, text='Выберите приоритет задачи.', reply_markup=markup)
+        except ValueError:
             new_message = bot.send_message(chat_id,
-                                           '*Пожалуйста, укажите дедлайн формате year-month-date hours:minutes.*',
+                                           '*Пожалуйста, укажите дедлайн в формате ГГГГ-ММ-ДД ЧЧ:ММ.*',
                                            parse_mode='Markdown')
             bot.register_next_step_handler(new_message, set_deadline)
-
+    else:
+        new_message = bot.send_message(chat_id,
+                                       '*Пожалуйста, укажите дедлайн формате year-month-date hours:minutes.*',
+                                       parse_mode='Markdown')
+        bot.register_next_step_handler(new_message, set_deadline)
 
 def edit_deadline(message):
     '''
@@ -737,7 +724,13 @@ def edit_deadline(message):
     all_tasks[chat_id][task_id]['deadline'] = message.text.strip()
 
     if fnmatch.fnmatch(message.text, "????-??-?? ??:??"):
-        show_change_of_task(chat_id)
+        try:
+            show_change_of_task(chat_id)
+        except ValueError:
+            new_message = bot.send_message(chat_id,
+                                           '*Пожалуйста, укажите дедлайн в формате ГГГГ-ММ-ДД ЧЧ:ММ.*',
+                                           parse_mode='Markdown')
+            bot.register_next_step_handler(new_message, edit_deadline)
     else:
         new_message = bot.send_message(chat_id, '*Пожалуйста, укажите дедлайн формате date.month.year hours:minutes.*',
                                        parse_mode='Markdown')
