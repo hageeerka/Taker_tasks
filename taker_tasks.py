@@ -678,7 +678,7 @@ def set_description(message):
     # if all_tasks[user_id][task_id]['description'] is None and all_tasks[user_id][task_id]['name'] is not None:
     all_tasks[chat_id][task_id]['description'] = message.text.strip()
     bot.send_message(chat_id,
-                     'Установите дедлайн. Укажите дату и время в формате: year-month-day hours:minutes, например, 2023-12-31 23:59')
+                     'Установите дедлайн. Укажите дату и время в формате: year-month-day hours:minutes, например, 2023-12-31 12:00')
     bot.register_next_step_handler(message, set_deadline)
 
 
@@ -720,7 +720,6 @@ def set_deadline(message):
                                            '*Пожалуйста, укажите дедлайн формате year-month-date hours:minutes.*',
                                            parse_mode='Markdown')
             bot.register_next_step_handler(new_message, set_deadline)
-            bot.register_next_step_handler(new_message, update_timer, chat_id)
 
 
 def edit_deadline(message):
@@ -741,7 +740,6 @@ def edit_deadline(message):
         new_message = bot.send_message(chat_id, '*Пожалуйста, укажите дедлайн формате date.month.year hours:minutes.*',
                                        parse_mode='Markdown')
         bot.register_next_step_handler(new_message, edit_deadline)
-        bot.register_next_step_handler(new_message, update_timer, chat_id, chat_id)
 
 
 def set_username(message):
