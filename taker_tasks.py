@@ -16,10 +16,16 @@ task_id = None  # глобальная переменная id чата
 member_id = None  # глобальная переменная id участника
 
 
-@bot.message_handler(commands=['menu'])
+@bot.message_handler(commands=['menu'])  # при отправке пользователем сообщения '/menu'
 def data_recovery(message):
+    '''
+    Считывает id чата и создаёт пустые словари в словарях temp_data, all_tasks,
+    my_team, доступные по ключу, равному id чата и загружает информацию из локальной папки в эти словари.
+    Отправляет собщение с кнопками Главного меню
+    :param message: сообщение пользоваеля, содержащее команду '/menu'
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # chat_id = message.chat.id
     temp_data[chat_id] = {}
     all_tasks[chat_id] = {}
     my_team[chat_id] = {}
@@ -27,10 +33,16 @@ def data_recovery(message):
     show_menu(chat_id)
 
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start'])  # при отправке пользователем сообщения '/start'
 def start_message(message):
+    '''
+    Считывает id чата и создаёт пустые словари в словарях temp_data, all_tasks,
+    my_team, доступные по ключу, равному id чата и загружает информацию из локальной папки в эти словари
+    Отправляет текст с приветствием и кнопкой добавления руководителя проекта.
+    :param message: сообщение пользоваеля, содержащее команду '/start'
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     text = f'Привет!👋🏼\nЯ Чат-бот Трекер задач, готов помочь вам с организацией работы над проектом. \n' \
            'Вместе мы сможем эффективно достигать поставленных целей. \n' \
            '*Для начала назначьте должность Руководителя.* '
@@ -46,16 +58,21 @@ def start_message(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
-    chat_id = call.message.chat.id
-    message_id = call.message.message_id
-    # user_id = call.message.chat.id
-    data = call.data
-
+    '''
+    Функция, которая обрабатывает нажатия на все кнопки
+    :param call: объект с информацией о нажатии кнопки
+    :type call: <class 'telebot.types.CallbackQuery'>
+    '''
+    chat_id = call.message.chat.id  # id чата, с которым происходит работа
+    message_id = call.message.message_id  # id сообщения ?
+    data = call.data  # ?
+    # При нажатии на кнопку 'Добавить руководителя' создаётся ключ "director_id" с пустым значенем, начинается заполнение информации о руководителе
     if data == 'add_director':
         temp_data[chat_id][chat_id] = {"director_id": None}
         bot.send_message(chat_id, "Напишите @username руководителя")
         bot.register_next_step_handler(call.message, set_director)
-
+    # При нажатии кнопки 'Создать задачу' переменная task_id принимает значение следущей по счёту задачи и создаёт словарь
+    # с информацией о задаче в словаре all_tasks  под ключём task_id, начинается этого словаря с добавления названия задачи
     if data == 'add_task':
         global task_id
         task_id = 'task_' + str(len(all_tasks[chat_id]) + 1)
@@ -63,6 +80,8 @@ def handle_callback_query(call):
                                        'priority': None, 'timer': None}
         bot.send_message(chat_id, "Напишите название задачи")
         bot.register_next_step_handler(call.message, set_name)
+    # При нажатии кнопки 'Редактировать задачу' выводится сообщение с информацией о всех задачах
+    # выводится сообщение с кнопками с номерами задач по порядку и кнопкой вернуться назад
     if data == 'edit_task':
 
         if len(all_tasks[chat_id]) != 0:
@@ -77,19 +96,29 @@ def handle_callback_query(call):
                         f"*Приоритет*: {all_tasks[chat_id][task_id]['priority']}\n" \
                         f"*До дедлайна осталось*: {all_tasks[chat_id][task_id]['timer']}\n"
             bot.send_message(chat_id, text=text, parse_mode='Markdown')
-
-            '''markup = types.InlineKeyboardMarkup()
-            buttons = [types.InlineKeyboardButton(str(i), callback_data=f'edit_task_{i}') for i in
-                       range(1, len(all_tasks[chat_id]) + 1)]
-            markup.add(*buttons)
-            bot.send_message(chat_id, text='Выберите задачу, которую хотите изменить', reply_markup=markup)'''
             buttons = []
             for i in range(1, len(all_tasks[chat_id]) + 1):
                 buttons.append({'text': str(i), 'callback_data': f'edit_task_{i}'})
             buttons.append({'text': '🔙Вернуться назад', 'callback_data': 'menu'})
             text = 'Выберите задачу, которую хотите изменить'
             send_message_with_inline_keyboard(chat_id, text, buttons)
+    if data == 'edit_name':
+        bot.send_message(chat_id, 'Напишите название задачи')
+        bot.register_next_step_handler(call.message, edit_name)
 
+    if data == 'edit_description':
+        bot.send_message(chat_id, 'Напишите описание задачи')
+        bot.register_next_step_handler(call.message, edit_description)
+
+    if data == 'edit_deadline':
+        bot.send_message(chat_id, 'Напишите дедлайн задачи')
+        bot.register_next_step_handler(call.message, edit_deadline)
+
+    if data == 'edit_priority':
+        markup = types.InlineKeyboardMarkup()
+        buttons = [types.InlineKeyboardButton(str(i), callback_data=f'priority_{i}') for i in range(1, 6)]
+        markup.add(*buttons)
+        bot.send_message(chat_id, text='Выберите приоритет задачи', reply_markup=markup)
     if data == 'all_tasks':
         show_all_tasks(message_id, chat_id)
 
@@ -188,23 +217,7 @@ def handle_callback_query(call):
         buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
         edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
 
-    if data == 'edit_name':
-        bot.send_message(chat_id, 'Напишите название задачи')
-        bot.register_next_step_handler(call.message, edit_name)
 
-    if data == 'edit_description':
-        bot.send_message(chat_id, 'Напишите описание задачи')
-        bot.register_next_step_handler(call.message, edit_description)
-
-    if data == 'edit_deadline':
-        bot.send_message(chat_id, 'Напишите дедлайн задачи')
-        bot.register_next_step_handler(call.message, edit_deadline)
-
-    if data == 'edit_priority':
-        markup = types.InlineKeyboardMarkup()
-        buttons = [types.InlineKeyboardButton(str(i), callback_data=f'priority_{i}') for i in range(1, 6)]
-        markup.add(*buttons)
-        bot.send_message(chat_id, text='Выберите приоритет задачи', reply_markup=markup)
     if data == 'menu':
         show_menu(chat_id)
     if data.startswith('priority'):
@@ -412,7 +425,7 @@ def handle_callback_query(call):
 
 
 def save_my_team(chat_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/m{chat_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{chat_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -421,7 +434,7 @@ def save_my_team(chat_id):
 
 
 def load_my_team(chat_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/m{chat_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{chat_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -432,7 +445,7 @@ def load_my_team(chat_id):
 
 
 def save_all_tasks(chat_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/a{chat_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{chat_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -441,7 +454,7 @@ def save_all_tasks(chat_id):
 
 
 def load_all_tasks(chat_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/a{chat_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{chat_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -452,7 +465,7 @@ def load_all_tasks(chat_id):
 
 
 def save_temp_data(chat_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/t{chat_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{chat_id}.json"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -461,7 +474,7 @@ def save_temp_data(chat_id):
 
 
 def load_temp_data(chat_id):
-    file_path = f"C:/Users/timofei/Desktop/моё/json/t{chat_id}.json"
+    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{chat_id}.json"
 
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -550,7 +563,6 @@ def set_director(message):
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     if chat_id in temp_data[chat_id] and temp_data[chat_id][chat_id]["director_id"] is None:
         username = message.text.strip()
         if username.startswith("@"):
@@ -631,8 +643,6 @@ def set_name(message):
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
-    # if all_tasks[user_id][task_id]['name'] is None:
     all_tasks[chat_id][task_id]['name'] = message.text.strip()
     bot.send_message(chat_id, 'Напишите описание задачи')
     bot.register_next_step_handler(message, set_description)
@@ -647,7 +657,6 @@ def edit_name(message):
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    chat_id = message.chat.id
     all_tasks[chat_id][task_id]['name'] = message.text.strip()
     show_change_of_task(chat_id)
 
@@ -660,8 +669,6 @@ def set_description(message):
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    # usert_id = message.chat.id
-    # if all_tasks[user_id][task_id]['description'] is None and all_tasks[user_id][task_id]['name'] is not None:
     all_tasks[chat_id][task_id]['description'] = message.text.strip()
     bot.send_message(chat_id,
                      'Установите дедлайн. Укажите дату и время в формате: year-month-day hours:minutes, например, 2023-12-31 12:00')
@@ -676,7 +683,6 @@ def edit_description(message):
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     all_tasks[chat_id][task_id]['description'] = message.text.strip()
     show_change_of_task(chat_id)
 
@@ -711,6 +717,7 @@ def set_deadline(message):
                                        parse_mode='Markdown')
         bot.register_next_step_handler(new_message, set_deadline)
 
+
 def edit_deadline(message):
     '''
     Проверяет сообщение пользоваеля на соответствие формату даты,
@@ -720,7 +727,6 @@ def edit_deadline(message):
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     all_tasks[chat_id][task_id]['deadline'] = message.text.strip()
 
     if fnmatch.fnmatch(message.text, "????-??-?? ??:??"):
@@ -746,7 +752,6 @@ def set_username(message):
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     if my_team[chat_id][member_id]['username'] is None:
         my_team[chat_id][member_id]['username'] = message.text.strip()
         if my_team[chat_id][member_id]['username'].startswith('@'):
@@ -761,15 +766,13 @@ def set_username(message):
 def edit_username(message):
     '''
     Проверяет сообщение пользоваеля на соответствие формату username,
-    изменяет дедлайн участника с id = member_id и сохраняет его в словарь my_team,
+    изменяет username участника с id = member_id и сохраняет его в словарь my_team,
     затем выводит сообщение с обновлённой информацией об участнике
     :param message: сообщение пользоваеля, содержащее username участника
     :type message: <class 'telebot.types.Message'>
     '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     if message.text.startswith('@'):
-        # if len(my_team[user_id]) == 0:
         my_team[chat_id][member_id]['username'] = message.text.strip()  #
         show_change_of_member(chat_id)
     else:
@@ -778,8 +781,13 @@ def edit_username(message):
 
 
 def set_firstname(message):
+    '''
+    Добавляет имя участника команды с id = member_id в словарь my_team,
+    перенаправляет пользователя к заполнению фамилии участника
+    :param message: сообщение пользоваеля, содержащее имя участника
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     if my_team[chat_id][member_id]['username'] is not None and my_team[chat_id][member_id]['firstname'] is None:
         my_team[chat_id][member_id]['firstname'] = message.text.strip()
         bot.send_message(chat_id, 'Напишите фамилию участника')
@@ -787,15 +795,25 @@ def set_firstname(message):
 
 
 def edit_firstname(message):
+    '''
+    Изменяет имя участника с id = member_id и сохраняет его в словарь my_team,
+    затем выводит сообщение с обновлённой информацией об участнике
+    :param message: сообщение пользоваеля, содержащее username участника
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     my_team[chat_id][member_id]['firstname'] = message.text.strip()
     show_change_of_member(chat_id)
 
 
 def set_lastname(message):
+    '''
+    Добавляет фамилию участника команды с id = member_id в словарь my_team,
+    перенаправляет пользователя к заполнению роли участника
+    :param message: сообщение пользоваеля, содержащее имя участника
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     if my_team[chat_id][member_id]['username'] is not None and my_team[chat_id][member_id][
         'firstname'] is not None and \
             my_team[chat_id][member_id]['lastname'] is None:
@@ -805,15 +823,25 @@ def set_lastname(message):
 
 
 def edit_lastname(message):
+    '''
+    Изменяет фамилию участника с id = member_id и сохраняет его в словарь my_team,
+    затем выводит сообщение с обновлённой информацией об участнике
+    :param message: сообщение пользоваеля, содержащее username участника
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     my_team[chat_id][member_id]['lastname'] = message.text.strip()
     show_change_of_member(chat_id)
 
 
 def set_role(message):
+    '''
+    Добавляет роль участника команды с id = member_id в словарь my_team,
+    Выводит сообщение с обновлённой информацией об участнике и кнопкой, возвращающей в главное меню
+    :param message: сообщение пользоваеля, содержащее имя участника
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     if my_team[chat_id][member_id]['username'] is not None and my_team[chat_id][member_id][
         'firstname'] is not None and \
             my_team[chat_id][member_id]['lastname'] is not None and my_team[chat_id][member_id]['role'] is None:
@@ -831,8 +859,13 @@ def set_role(message):
 
 
 def edit_role(message):
+    '''
+    Изменяет роль участника с id = member_id и сохраняет его в словарь my_team,
+    затем выводит сообщение с обновлённой информацией об участнике
+    :param message: сообщение пользоваеля, содержащее username участника
+    :type message: <class 'telebot.types.Message'>
+    '''
     chat_id = message.chat.id
-    # user_id = message.chat.id
     my_team[chat_id][member_id]['role'] = message.text.strip()
     show_change_of_member(chat_id)
     handle_save_command(chat_id)
