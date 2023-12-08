@@ -102,6 +102,8 @@ def handle_callback_query(call):
             buttons.append({'text': '🔙Вернуться назад', 'callback_data': 'menu'})
             text = 'Выберите задачу, которую хотите изменить'
             send_message_with_inline_keyboard(chat_id, text, buttons)
+    # При нажатии кнопки 'Редактировать название' выводится текст с просьбой написать новое
+    # название задачи и происходит переопределение значения ключа 'name' в словаре all_tasks
     if data == 'edit_name':
         bot.send_message(chat_id, 'Напишите название задачи')
         bot.register_next_step_handler(call.message, edit_name)
@@ -113,7 +115,8 @@ def handle_callback_query(call):
     if data == 'edit_deadline':
         bot.send_message(chat_id, 'Напишите дедлайн задачи')
         bot.register_next_step_handler(call.message, edit_deadline)
-
+    # При нажатии кнопки 'Изменить приоритет' выводится текст с просьбой выбрать новый приоритет с
+    # кнопками от 1 до 5  и происходит переопределение значения ключа 'priority' в словаре all_tasks
     if data == 'edit_priority':
         markup = types.InlineKeyboardMarkup()
         buttons = [types.InlineKeyboardButton(str(i), callback_data=f'priority_{i}') for i in range(1, 6)]
@@ -121,16 +124,19 @@ def handle_callback_query(call):
         bot.send_message(chat_id, text='Выберите приоритет задачи', reply_markup=markup)
     if data == 'all_tasks':
         show_all_tasks(message_id, chat_id)
-
+    # При нажатии на кнопку 'Задачи для участника' выводится текст с просьбой выбрать интересующего участника
+    # команды и кнопками с username всех участников. Далее состояние callback_data меняется на show_tasks_for_member_{номер участника п/п, для которого нужно показать задачу}
     if data.startswith('show_member_tasks'):
         markup = types.InlineKeyboardMarkup()
         buttons = [types.InlineKeyboardButton(my_team[chat_id]['member_' + str(i)]['username'],
                                               callback_data=f'show_tasks_for_member_{i}') for i in
                    range(1, len(my_team[chat_id]) + 1)]
         markup.add(*buttons)
+        markup.add(types.InlineKeyboardButton(text='🔙Вернуться назад', callback_data='all_tasks'))
         edit_message_text(chat_id, message_id, text='Выбери участника, для которого хочешь посмотреть задачи',
                           reply_markup=markup)
-
+    # При нажатии на одну из кнопок выше выводится отсортированный по приоритету список кнопок с названием задачи,
+    # принадлежащих заданному участнику
     if data.startswith('show_tasks_for_member_'):
         global member_id
         member_id = 'member_' + data[-1]
@@ -146,8 +152,10 @@ def handle_callback_query(call):
                 if num_priority == int(all_tasks[chat_id][task_id]['priority']):
                     buttons.append({'text': all_tasks[chat_id][task_id]['name'],
                                     'callback_data': f'show_task_{task_id[-1]}_for_member_{member_id[-1]}'})
+        buttons.append({'text': '🔙Вернуться назад',
+                        'callback_data': 'show_member_tasks'})
         edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
-
+    # При нажатии на одну из кнопок выше выводится текст с информацией о выбранной задаче и кнопками возврата
     if data.startswith('show_task_'):
         task_id = 'task_' + data[10]
         update_timer(chat_id)
@@ -159,8 +167,9 @@ def handle_callback_query(call):
                f"Приоритет: {all_tasks[chat_id][task_id]['priority']}\n" \
                f"До дедлайна осталось: {all_tasks[chat_id][task_id]['timer']}\n"
         buttons = [
-            {'text': '🔙Выбрать другую задачу', 'callback_data': f'show_tasks_for_member_{task_id[-1]}'},
-            {'text': "Вернуться в Главное меню", 'callback_data': 'menu'}
+            {'text': "Вернуться в Главное меню", 'callback_data': 'menu'},
+            {'text': '🔙Выбрать другую задачу', 'callback_data': f'show_tasks_for_member_{member_id[-1]}'}
+
         ]
         edit_message_with_inline_keyboard(chat_id, message_id, text, buttons)
 
@@ -216,7 +225,6 @@ def handle_callback_query(call):
 
         buttons = [{'text': 'Назад', 'callback_data': 'return_all_tasks'}]
         edit_message_text(chat_id, message_id, text, reply_markup=generate_inline_keyboard(buttons))
-
 
     if data == 'menu':
         show_menu(chat_id)
