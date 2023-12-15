@@ -7,8 +7,9 @@ import fnmatch
 import requests
 import datetime
 
-TOKEN = '6773205610:AAH3PRcWctg3bgSLpFKDyM-exIEohFZV4gE'
+TOKEN = '6856368403:AAFdgiN2KyqflfVZyCl6bXsqfbJDNujV5BI'
 bot = telebot.TeleBot(TOKEN)
+file_path = "C:/Users/timofei/Desktop/моё/json"
 temp_data = {}  # словарь {id чата: username руководителя}
 all_tasks = {}  # словарь {id задачи:{информация о задаче}}
 my_team = {}  # словарь {id участника: {информация об участнике}}
@@ -466,76 +467,41 @@ def handle_callback_query(call):
         bot.register_next_step_handler(call.message, neuroask)
 
 
-def save_my_team(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{chat_id}.json"
+def handle_save_command(chat_id):
+    file_temp_data = f"{file_path}/t{chat_id}.json"
+    file_all_tasks = f"{file_path}/a{chat_id}.json"
+    file_my_team = f"{file_path}/m{chat_id}.json"
 
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    with open(file_path, 'w', encoding='utf-8') as file:
+    os.makedirs(os.path.dirname(file_temp_data), exist_ok=True)
+    with open(file_temp_data, 'w', encoding='utf-8') as file:
         json.dump(my_team[chat_id], file, ensure_ascii=False)
 
-
-def load_my_team(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/m{chat_id}.json"
-
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-            my_team[chat_id].update(data)
-    except FileNotFoundError:
-        print(f"Файл {file_path} не найден.")
-
-
-def save_all_tasks(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{chat_id}.json"
-
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    with open(file_path, 'w', encoding='utf-8') as file:
+    os.makedirs(os.path.dirname(file_all_tasks), exist_ok=True)
+    with open(file_all_tasks, 'w', encoding='utf-8') as file:
         json.dump(all_tasks[chat_id], file, ensure_ascii=False)
 
-
-def load_all_tasks(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/a{chat_id}.json"
-
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-            all_tasks[chat_id].update(data)
-    except FileNotFoundError:
-        print(f"Файл {file_path} не найден.")
-
-
-def save_temp_data(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{chat_id}.json"
-
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    with open(file_path, 'w', encoding='utf-8') as file:
+    os.makedirs(os.path.dirname(file_my_team), exist_ok=True)
+    with open(file_my_team, 'w', encoding='utf-8') as file:
         json.dump(temp_data[chat_id], file, ensure_ascii=False)
 
 
-def load_temp_data(chat_id):
-    file_path = f"C:/Users/Диана/PycharmProjects/pythonProject/Новая папка/t{chat_id}.json"
+def handle_load_command(chat_id):
+    file_temp_data = f"{file_path}/t{chat_id}.json"
+    file_all_tasks = f"{file_path}/a{chat_id}.json"
+    file_my_team = f"{file_path}/m{chat_id}.json"
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_temp_data, 'r', encoding='utf-8') as file:
             data = json.load(file)
             temp_data[chat_id].update(data)
+        with open(file_all_tasks, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            all_tasks[chat_id].update(data)
+        with open(file_my_team, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            my_team[chat_id].update(data)
     except FileNotFoundError:
-        print(f"Файл {file_path} не найден.")
-
-
-def handle_save_command(chat_id):
-    save_my_team(chat_id)
-    save_temp_data(chat_id)
-    save_all_tasks(chat_id)
-
-
-def handle_load_command(chat_id):
-    load_my_team(chat_id)
-    load_temp_data(chat_id)
-    load_all_tasks(chat_id)
+        print(f"Файл {file_temp_data} не найден.")
 
 
 def send_message_with_inline_keyboard(chat_id, text, buttons):
